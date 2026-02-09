@@ -2,86 +2,102 @@
 
 All notable changes to The Pour Pig project will be documented in this file.
 
-## [Unreleased] - February 9, 2026
-
-### Added
-- **Project Planning**: Comprehensive implementation plan (project-plan-v2.md)
-  - 5-day build schedule for ETHGlobal San Francisco
-  - Cairo contract architecture (PigNFT, Leaderboard, Achievements)
-  - Cartridge Controller + Sepolia deployment strategy
-
-- **Hackathon Research**: Documented SF hackathon opportunities
-  - ethSF, DeSci, Aztec, and other events
-  - Prize pools and eligibility requirements
-
-### Changed
-- Updated project memory.md with VRF integration decision
-- Finalized tech stack: Vite + Three.js + Cairo + Cartridge
-
 ---
 
-## [0.2.0] - February 8, 2026
+## [Unreleased] - February 9, 2026
 
-### Added
-- **Vite Project Setup**: Initialized frontend with Vite build tool
+### 🛠 Architecture
+
+- **Build System Migration**: Migrated from vanilla JS + CDN to Vite + npm modules
+  - Better DX with HMR and bundling
+  - Easier Starknet SDK integration
   - `npm create vite@latest frontend -- --template vanilla`
-  - Configured for vanilla JavaScript + Three.js
 
-- **Three.js Integration**: Migrated from CDN to npm module
-  - Installed `three` via npm
-  - Updated imports from `https://unpkg.com/three@0.160.0/` to `import * as THREE from 'three'`
-  - GLTFLoader now imports from `three/addons/loaders/GLTFLoader.js`
+- **VRF Integration Decision**: Manually define VRF interface instead of `cartridge_vrf` dependency
+  - Avoids OpenZeppelin version conflict (2.0.0 vs 3.0.0)
+  - Lighter codebase, same functionality
 
-- **Game Migration**: Ported existing game to Vite structure
-  - Moved `game.js` → `frontend/src/main.js`
-  - Moved inline CSS → `frontend/src/style.css`
-  - Copied `poorPIG.glb` to `frontend/public/`
+### ✨ Smart Contracts (Cairo)
 
-- **Blockchain UI Skeleton**: Added placeholder UI for Starknet integration
+- **PigNFT Contract** (`contracts/src/pig_nft.cairo`)
+  - ERC721-based NFT with VRF-generated pig attributes
+  - Attributes: color_hue, speed_bonus, size_scale, rarity (0-3)
+  - One pig per player (Soulbound-ish)
+
+- **Game Mechanics On-Chain**
+  - `mint_pig()`: VRF generates unique pig attributes
+  - `start_game()`: Tracks game rounds per player
+  - `submit_score()`: Updates top-10 leaderboard
+  - `claim_achievement()`: 4 achievements (Coin Collector, Master, Veteran, Legend)
+
+- **Leaderboard System**
+  - Top-10 global ranking
+  - Auto-sorts on score submission
+  - Prevents duplicate submissions per round
+
+- **Daily Seed System**
+  - `get_daily_seed()`: Deterministic seed from block timestamp
+  - Same coin positions for all players on same day
+
+- **VRF Interface** (`contracts/src/vrf_provider.cairo`)
+  - Manual interface definition for Cartridge VRF
+  - `consume_random(Source) -> felt252`
+  - `request_random(caller, Source)`
+
+### ✨ Frontend
+
+- **Three.js Game Engine** (`frontend/src/main.js`)
+  - 3D pig model with idle/walk/run animations
+  - Third-person camera with spring-damper following
+  - WASD + Arrow key movement, Shift to sprint
+  - Circular world boundary (radius: 40 units)
+  - Procedural environment (trees, rocks, flowers, grass)
+
+- **Blockchain UI Skeleton**
   - Wallet connect button (top-right)
-  - Mint panel (for VRF pig generation)
+  - Mint panel for VRF pig generation
   - Pig stats display (color, speed, size, rarity)
-  - Leaderboard panel
+  - Leaderboard panel (top-10)
   - Score HUD with submit button
+  - Achievement display (4 achievements)
 
-- **Project Documentation**:
-  - `memory.md` - Project decisions, tech stack, known issues
-  - `CHANGELOG.md` - This file
+- **Pattern System**
+  - 8 pig skin patterns: Houndstooth, Stripes, Polka Dots, Plaid, Stars, Diamond, Chevron, Camo
+  - Pattern derived from VRF color_hue + rarity
 
-### Changed
-- **HTML Structure**: Updated `index.html` with blockchain UI elements
-- **CSS**: Expanded styles from ~100 lines to ~330 lines with game + blockchain UI
-- **Import Pattern**: Changed from ES modules via importmap to npm imports
+### 🎮 Game Features
 
-### Technical Decisions
-- **VRF Integration**: Decided to manually define VRF interface instead of using `cartridge_vrf` dependency due to OpenZeppelin version conflict (2.0.0 vs 3.0.0)
-- **Build Tool**: Chose Vite over vanilla setup for better DX and Starknet SDK integration
+- ✅ 3D pig model with animations
+- ✅ Third-person camera with smooth following
+- ✅ Keyboard controls (WASD + arrows + Shift)
+- ✅ Procedural environment generation
+- ✅ Circular world boundary
+- ⬜ Wallet connection (planned: Cartridge Controller)
+- ⬜ VRF mint flow (planned)
+- ⬜ Collectibles spawning (planned)
+- ⬜ On-chain score submission (planned)
 
-### Removed
-- `frontend/src/counter.js` - Default Vite template file
-- `frontend/src/javascript.svg` - Default Vite template asset
+### 📝 Documentation
 
-### Game Features (Working)
-- ✅ 3D pig model with idle/walk/run animations
-- ✅ Third-person camera with spring-damper following
-- ✅ WASD + Arrow key movement
-- ✅ Sprint with Shift key
-- ✅ Circular world boundary (radius: 40 units)
-- ✅ Procedural environment (trees, rocks, flowers, grass patches)
+- **Project Plan** (`project-plan-v2.md`)
+  - 5-day build schedule for ETHGlobal SF
+  - Day-by-day task breakdown
+  - Contract architecture design
 
-### Game Features (Planned)
-- ⬜ Wallet connection via Cartridge Controller
-- ⬜ VRF-based pig attribute generation
-- ⬜ Collectibles (coins, gems, legendary items)
-- ⬜ Chain-based achievements
-- ⬜ On-chain leaderboard
-- ⬜ Score submission
+- **Project Memory** (`memory.md`)
+  - Active decisions log
+  - Tech stack reference
+  - Known issues and assumptions to test
+
+- **Hackathon Research** (`hackathon-opportunities.md`)
+  - SF hackathon events (ethSF, DeSci, Aztec, etc.)
+  - Prize pools and eligibility requirements
 
 ---
 
 ## [0.1.0] - December 10, 2025 (Original Game)
 
-### Added
+### ✨ Frontend
 - Initial Three.js game implementation
 - GLTF pig model with animations
 - Third-person camera system
@@ -93,10 +109,12 @@ All notable changes to The Pour Pig project will be documented in this file.
 
 ## Format
 
-This changelog follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format:
-- **Added** - New features
-- **Changed** - Changes to existing functionality
-- **Deprecated** - Soon-to-be removed features
-- **Removed** - Removed features
-- **Fixed** - Bug fixes
-- **Security** - Security vulnerability fixes
+This changelog follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
+
+Categories:
+- **🛠 Architecture** - Structural changes, build system, dependencies
+- **✨ Smart Contracts** - Cairo contract changes
+- **✨ Frontend** - UI, game engine, blockchain integration
+- **🎮 Game Features** - Gameplay mechanics
+- **📝 Documentation** - Docs, plans, research
+- **🐛 Bugfixes** - Bug fixes
