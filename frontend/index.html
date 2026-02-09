@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Pour Pig - Starknet Coin Rush</title>
+    <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+    <div id="game-container"></div>
+
+    <div id="loading-screen">
+        <h1>The Pour Pig</h1>
+        <p>Loading adventure...</p>
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Top bar: wallet + score -->
+    <div id="top-bar">
+        <button id="wallet-btn">Connect Wallet</button>
+        <div id="player-info" class="hidden">
+            <span id="player-address"></span>
+            <span id="player-score">Score: 0</span>
+        </div>
+    </div>
+
+    <!-- Mint panel (shown after connect, before minting) -->
+    <div id="mint-panel" class="hidden">
+        <h2>Mint Your Pig</h2>
+        <p>Each pig gets unique VRF-generated attributes that affect gameplay!</p>
+        <p style="font-size:0.8rem;color:#888">Speed, size, color, rarity — all on-chain random</p>
+        <button id="mint-btn">Mint Pig NFT</button>
+        <div id="mint-status"></div>
+    </div>
+
+    <!-- Pig stats overlay (shown after mint) -->
+    <div id="pig-stats" class="hidden">
+        <h3>Your Pig</h3>
+        <div id="pig-color"></div>
+        <div id="pig-speed"></div>
+        <div id="pig-size"></div>
+        <div id="pig-rarity"></div>
+    </div>
+
+    <!-- Leaderboard panel -->
+    <div id="leaderboard-panel" class="hidden">
+        <h3>Leaderboard</h3>
+        <div id="leaderboard-list"></div>
+        <button id="close-leaderboard">Close</button>
+    </div>
+
+    <!-- Game HUD -->
+    <div id="game-hud" class="hidden">
+        <div id="hud-score">Score: 0</div>
+        <button id="submit-score-btn" class="hidden">Start Round</button>
+        <button id="leaderboard-btn">Leaderboard</button>
+    </div>
+
+    <div id="controls-hint">
+        <h3>Controls</h3>
+        <div><kbd>W</kbd> / <kbd>Up</kbd> Move Forward</div>
+        <div><kbd>S</kbd> / <kbd>Down</kbd> Move Backward</div>
+        <div><kbd>A</kbd> / <kbd>Left</kbd> Turn Left</div>
+        <div><kbd>D</kbd> / <kbd>Right</kbd> Turn Right</div>
+        <div><kbd>Shift</kbd> + <kbd>W</kbd> Run</div>
+        <div style="margin-top:8px;color:#f7931a;font-size:0.8rem">Collect coins in 60s!</div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
