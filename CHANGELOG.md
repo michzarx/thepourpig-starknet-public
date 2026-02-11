@@ -4,7 +4,95 @@ All notable changes to The Pour Pig project will be documented in this file.
 
 ---
 
-## [Unreleased] - February 9, 2026
+## [0.4.1] - February 12, 2026
+
+### ✨ Frontend
+
+- **Achievements Panel UI**
+  - New "Achievements" button in game HUD (shown after connecting wallet + minting pig)
+  - Full achievement list with icons, names, and detailed descriptions for all 6 achievements
+  - Visual distinction: unlocked (gold border, full color) vs locked (grayed out icon)
+  - Real-time progress display for locked achievements:
+    - Score achievements: `Progress: 150/500 points`
+    - Game count: `Progress: 3/10 games`
+    - Streak: `Progress: 2/3 days streak`
+    - Daily Champion: `Ready to claim!` or `Not #1 today`
+
+- **Speed Calculation Adjustment**
+  - Fixed base movement speeds: walk 3, run 6, backward 2 (previously 1.5/3/1)
+  - Speed bonus from VRF now multiplies base speed: `1.0x - 1.5x` range
+  - Formula: `speedMultiplier = 1 + (speedBonus / 20) * 0.5`
+
+### 📝 UX
+
+- **Better Achievement Transparency**
+  - Players can now see all achievement requirements before attempting to claim
+  - Eliminates confusion from "STREAK_TOO_SHORT" errors
+  - Progress indicators show how close players are to unlocking each achievement
+
+---
+
+## [0.4.0] - February 10, 2026 (Day 6: Daily Challenge + Power-ups)
+
+### ✨ Smart Contracts (Cairo)
+
+- **Daily Leaderboard System**
+  - `daily_scores` storage: tracks each player's best score per day
+  - `daily_leaderboard`: top-10 ranking per day (separate from all-time)
+  - `get_daily_leaderboard_entry()`, `get_daily_leaderboard_size()`, `get_player_daily_score()`, `get_current_day()`
+
+- **Player Streak Tracking**
+  - `player_streak` + `last_play_day` storage
+  - Auto-increments on consecutive daily play, resets on gap
+  - `get_player_streak()` read function
+
+- **New Achievements**
+  - Achievement #4: **Daily Champion** — #1 on today's leaderboard
+  - Achievement #5: **Streak Master** — 3+ day play streak
+
+- **Contract Redeployed (V3)**
+  - New address: `0x07e0635703126ca36f634ed88bbb591679c8a982fced5f52744e0b08f1e5d141`
+  - Class hash: `0x0d1905bec970bb545f159fa718d368409415479c1fd98e7414f368150d09f3d`
+
+### ✨ Frontend
+
+- **Power-Up System** (3 types)
+  - 🧲 **Magnet** (5s): attracts nearby coins within 8-unit radius
+  - ⚡ **Speed** (4s): doubles walk/run speed
+  - ⏰ **Freeze** (3s): pauses round timer, extends other power-ups
+  - Each has unique 3D model (torus/octahedron/sphere), glow, point light, pulsing animation
+  - Collision detection, particle effects, synthesized sound effects per type
+
+- **VRF Rarity → Power-Up Bonuses**
+  - Uncommon: +0.5s duration, 1 starting power-up
+  - Rare: +1.0s duration, 1 starting power-up
+  - Legendary: +1.5s duration, 2 starting power-ups
+
+- **Daily Challenge UI**
+  - Daily banner: day number, countdown to UTC midnight, today's best score, streak display
+  - Auto-refreshes every 60s, hidden on disconnect
+
+- **Leaderboard Tabs**
+  - "All Time" / "Today" tab switcher
+  - Today tab fetches daily leaderboard from contract
+
+- **New Achievement Claims**
+  - Auto-attempts Daily Champion + Streak Master after each round
+
+### 🛠 Architecture
+
+- **Shared Config** (`frontend/src/config.js`)
+  - `CONTRACT_ADDRESS`, `VRF_PROVIDER`, `RPC_URL` in one file
+  - `contract.js` and `controller.js` both import from here
+  - No more address mismatch bugs on redeploy
+
+### 🐛 Bugfixes
+
+- **Controller login broken after redeploy**: `controller.js` had old contract address, session key policies didn't match new contract
+
+---
+
+## [0.3.0] - February 9, 2026
 
 ### 🛠 Architecture
 

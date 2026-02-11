@@ -11,6 +11,7 @@ import {
   mintPig, startGame, submitScore, claimAchievement, hasAchievement,
   getPlayerPig, getPigAttributes, getPlayerScore,
   getLeaderboard, getDailySeed, getGamesPlayed,
+  getDailyLeaderboard, getCurrentDay, getPlayerDailyScore, getPlayerStreak,
   rarityName, seededRandom,
 } from './contract.js';
 
@@ -42,10 +43,10 @@ function getPatternIndex(colorHue, rarity) {
 // ============================================================================
 const CONFIG = {
     // Character movement
-    walkSpeed: 1.5,
-    runSpeed: 3,
-    backwardSpeed: 1,
-    rotationSpeed: 3,
+    walkSpeed: 3,
+    runSpeed: 6,
+    backwardSpeed: 2,
+    rotationSpeed: 4,
 
     // Camera settings
     cameraDistance: 4,
@@ -988,6 +989,321 @@ function checkCoinCollisions() {
 }
 
 // ============================================================================
+// POWER-UP SYSTEM
+// ============================================================================
+const POWERUP_TYPES = [
+    { id: 'magnet',  color: 0x4488FF, emissive: 0x2244AA, label: '🧲 Magnet',  duration: 5 },
+    { id: 'speed',   color: 0xFFDD00, emissive: 0xCC8800, label: '⚡ Speed',   duration: 4 },
+    { id: 'freeze',  color: 0x44FFAA, emissive: 0x22AA66, label: '⏰ Freeze',  duration: 3 },
+];
+const POWERUP_COLLECT_RADIUS = 1.8;
+const MAGNET_ATTRACT_RADIUS = 8;
+const MAGNET_ATTRACT_SPEED = 12;
+
+const powerUps = []; // { mesh, type, collected }
+const activePowerUps = {}; // { magnet: { timeLeft, bonusDuration }, ... }
+let powerUpParticles = []; // visual effect particles for active power-ups
+let originalWalkSpeed = CONFIG.walkSpeed;
+let originalRunSpeed = CONFIG.runSpeed;
+
+function createPowerUpMesh(typeObj) {
+    const group = new THREE.Group();
+
+    if (typeObj.id === 'magnet') {
+        // Blue torus (magnet ring)
+        const torusGeo = new THREE.TorusGeometry(0.4, 0.12, 8, 16);
+        const torusMat = new THREE.MeshStandardMaterial({
+            color: typeObj.color, emissive: typeObj.emissive, emissiveIntensity: 0.8,
+            metalness: 0.6, roughness: 0.2,
+        });
+        group.add(new THREE.Mesh(torusGeo, torusMat));
+    } else if (typeObj.id === 'speed') {
+        // Yellow octahedron (lightning bolt)
+        const octGeo = new THREE.OctahedronGeometry(0.35, 0);
+        const octMat = new THREE.MeshStandardMaterial({
+            color: typeObj.color, emissive: typeObj.emissive, emissiveIntensity: 1.0,
+            metalness: 0.7, roughness: 0.1,
+        });
+        group.add(new THREE.Mesh(octGeo, octMat));
+    } else {
+        // Green sphere (time freeze)
+        const sphereGeo = new THREE.SphereGeometry(0.35, 16, 16);
+        const sphereMat = new THREE.MeshStandardMaterial({
+            color: typeObj.color, emissive: typeObj.emissive, emissiveIntensity: 0.8,
+            metalness: 0.3, roughness: 0.3,
+        });
+        group.add(new THREE.Mesh(sphereGeo, sphereMat));
+    }
+
+    // Glow sphere
+    const glowGeo = new THREE.SphereGeometry(0.7, 12, 12);
+    const glowMat = new THREE.MeshBasicMaterial({
+        color: typeObj.color, transparent: true, opacity: 0.15,
+    });
+    group.add(new THREE.Mesh(glowGeo, glowMat));
+
+    // Point light
+    const light = new THREE.PointLight(typeObj.color, 1.5, 5);
+    light.position.set(0, 0.3, 0);
+    group.add(light);
+
+    group.position.y = 0.8;
+    return group;
+}
+
+function spawnPowerUps(seed) {
+    clearPowerUps();
+    const rng = seededRandom(seed + 9999);
+
+    for (let i = 0; i < POWERUP_TYPES.length; i++) {
+        const typeObj = POWERUP_TYPES[i];
+        const angle = rng() * Math.PI * 2;
+        const radius = 8 + rng() * (CONFIG.worldRadius - 18);
+        const x = Math.cos(angle) * radius;
+        const z = Math.sin(angle) * radius;
+
+        const mesh = createPowerUpMesh(typeObj);
+        mesh.position.x = x;
+        mesh.position.z = z;
+        scene.add(mesh);
+        powerUps.push({ mesh, type: typeObj, collected: false });
+    }
+}
+
+function clearPowerUps() {
+    for (const p of powerUps) {
+        scene.remove(p.mesh);
+    }
+    powerUps.length = 0;
+    // Clear active effects
+    for (const key of Object.keys(activePowerUps)) {
+        delete activePowerUps[key];
+    }
+    powerUpParticles.forEach(p => { scene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose(); });
+    powerUpParticles = [];
+    // Restore speeds
+    CONFIG.walkSpeed = originalWalkSpeed;
+    CONFIG.runSpeed = originalRunSpeed;
+}
+
+function animatePowerUps(time) {
+    for (const p of powerUps) {
+        if (p.collected) continue;
+        p.mesh.rotation.y = time * 3;
+        p.mesh.position.y = 0.8 + Math.sin(time * 4 + p.mesh.position.x * 0.5) * 0.2;
+        // Pulse scale
+        const pulse = 1 + Math.sin(time * 5) * 0.1;
+        p.mesh.scale.setScalar(pulse);
+    }
+}
+
+function checkPowerUpCollisions() {
+    if (!gameState.pig || !roundState.active) return;
+    const pigPos = gameState.pig.position;
+
+    for (const p of powerUps) {
+        if (p.collected) continue;
+        const dx = pigPos.x - p.mesh.position.x;
+        const dz = pigPos.z - p.mesh.position.z;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+        if (dist < POWERUP_COLLECT_RADIUS) {
+            p.collected = true;
+            p.mesh.visible = false;
+
+            // Calculate bonus duration from rarity
+            let bonusDuration = 0;
+            if (pigAttrs) {
+                const r = pigAttrs.rarity;
+                if (r === 1) bonusDuration = 0.5;
+                else if (r === 2) bonusDuration = 1.0;
+                else if (r === 3) bonusDuration = 1.5;
+            }
+
+            activatePowerUp(p.type, bonusDuration);
+            playPowerUpSound(p.type.id);
+            showBanner(p.type.label);
+            spawnCoinParticles(p.mesh.position.clone(), true); // reuse particle burst
+        }
+    }
+}
+
+function activatePowerUp(typeObj, bonusDuration) {
+    const totalDuration = typeObj.duration + bonusDuration;
+    activePowerUps[typeObj.id] = { timeLeft: totalDuration, totalDuration };
+
+    if (typeObj.id === 'speed') {
+        CONFIG.walkSpeed = originalWalkSpeed * 2;
+        CONFIG.runSpeed = originalRunSpeed * 2;
+    }
+}
+
+function updatePowerUps(dt) {
+    // Magnet effect: attract nearby coins
+    if (activePowerUps.magnet && activePowerUps.magnet.timeLeft > 0 && gameState.pig) {
+        const pigPos = gameState.pig.position;
+        for (const c of coins) {
+            if (c.collected) continue;
+            const dx = pigPos.x - c.mesh.position.x;
+            const dz = pigPos.z - c.mesh.position.z;
+            const dist = Math.sqrt(dx * dx + dz * dz);
+            if (dist < MAGNET_ATTRACT_RADIUS && dist > 0.1) {
+                const speed = MAGNET_ATTRACT_SPEED * dt;
+                c.mesh.position.x += (dx / dist) * speed;
+                c.mesh.position.z += (dz / dist) * speed;
+            }
+        }
+        // Spawn magnet ring particles
+        if (Math.random() < 0.3) {
+            spawnPowerUpParticle(pigPos, 0x4488FF);
+        }
+    }
+
+    // Freeze effect: pause timer
+    const isFrozen = activePowerUps.freeze && activePowerUps.freeze.timeLeft > 0;
+
+    // Speed effect particles
+    if (activePowerUps.speed && activePowerUps.speed.timeLeft > 0 && gameState.pig) {
+        if (Math.random() < 0.4) {
+            const pos = gameState.pig.position.clone();
+            pos.y += 0.5;
+            spawnPowerUpParticle(pos, 0xFFDD00);
+        }
+    }
+
+    // Freeze effect particles
+    if (isFrozen && Math.random() < 0.2) {
+        const edge = new THREE.Vector3(
+            (Math.random() - 0.5) * 2,
+            Math.random() * 2,
+            0,
+        );
+        if (gameState.pig) {
+            edge.add(gameState.pig.position);
+        }
+        spawnPowerUpParticle(edge, 0x44FFAA);
+    }
+
+    // Tick down active power-ups
+    for (const key of Object.keys(activePowerUps)) {
+        const pu = activePowerUps[key];
+        if (isFrozen && key !== 'freeze') {
+            // Don't tick other power-ups while frozen
+        } else {
+            pu.timeLeft -= dt;
+        }
+        if (pu.timeLeft <= 0) {
+            // Deactivate
+            if (key === 'speed') {
+                CONFIG.walkSpeed = originalWalkSpeed;
+                CONFIG.runSpeed = originalRunSpeed;
+            }
+            delete activePowerUps[key];
+        }
+    }
+
+    // Update power-up particles
+    for (let i = powerUpParticles.length - 1; i >= 0; i--) {
+        const p = powerUpParticles[i];
+        p.life -= dt * 2;
+        if (p.life <= 0) {
+            scene.remove(p.mesh);
+            p.mesh.geometry.dispose();
+            p.mesh.material.dispose();
+            powerUpParticles.splice(i, 1);
+            continue;
+        }
+        p.mesh.position.addScaledVector(p.velocity, dt);
+        p.mesh.material.opacity = p.life;
+        p.mesh.scale.setScalar(p.life * 0.5);
+    }
+
+    return isFrozen;
+}
+
+function spawnPowerUpParticle(pos, color) {
+    const geo = new THREE.SphereGeometry(0.05, 4, 4);
+    const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.8 });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.copy(pos);
+    scene.add(mesh);
+    const vel = new THREE.Vector3(
+        (Math.random() - 0.5) * 2,
+        Math.random() * 1.5 + 0.5,
+        (Math.random() - 0.5) * 2,
+    );
+    powerUpParticles.push({ mesh, velocity: vel, life: 1.0 });
+}
+
+function playPowerUpSound(typeId) {
+    try {
+        const ctx = getAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (typeId === 'magnet') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(120, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(240, ctx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.2, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.4);
+        } else if (typeId === 'speed') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(440, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.25);
+        } else {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1000, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.4);
+            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.5);
+        }
+    } catch {}
+}
+
+function getPowerUpHUDText() {
+    const parts = [];
+    for (const key of Object.keys(activePowerUps)) {
+        const pu = activePowerUps[key];
+        const type = POWERUP_TYPES.find(t => t.id === key);
+        if (type && pu.timeLeft > 0) {
+            parts.push(`${type.label} ${pu.timeLeft.toFixed(1)}s`);
+        }
+    }
+    return parts.length > 0 ? ' | ' + parts.join(' ') : '';
+}
+
+// VRF rarity → starting power-ups
+function grantRarityPowerUps() {
+    if (!pigAttrs) return;
+    const r = pigAttrs.rarity;
+    if (r === 0) return; // Common: no starting power-ups
+
+    const available = [...POWERUP_TYPES];
+    const count = r >= 3 ? 2 : 1; // Legendary=2, Uncommon/Rare=1
+    let bonusDuration = 0;
+    if (r === 1) bonusDuration = 0.5;
+    else if (r === 2) bonusDuration = 1.0;
+    else if (r === 3) bonusDuration = 1.5;
+
+    for (let i = 0; i < count && available.length > 0; i++) {
+        const idx = Math.floor(Math.random() * available.length);
+        const typeObj = available.splice(idx, 1)[0];
+        activatePowerUp(typeObj, bonusDuration);
+        showAchievementToast(`Rarity bonus: ${typeObj.label}!`);
+    }
+}
+
+// ============================================================================
 // ROUND STATE
 // ============================================================================
 const roundState = {
@@ -1015,6 +1331,10 @@ const leaderboardBtn = document.getElementById('leaderboard-btn');
 const leaderboardPanel = document.getElementById('leaderboard-panel');
 const leaderboardList = document.getElementById('leaderboard-list');
 const closeLeaderboard = document.getElementById('close-leaderboard');
+const achievementsBtn = document.getElementById('achievements-btn');
+const achievementsPanel = document.getElementById('achievements-panel');
+const achievementsList = document.getElementById('achievements-list');
+const closeAchievements = document.getElementById('close-achievements');
 
 let hasPig = false;
 let bestScore = 0;
@@ -1029,6 +1349,10 @@ walletBtn.addEventListener('click', async () => {
     mintPanel.classList.add('hidden');
     pigStats.classList.add('hidden');
     gameHud.classList.add('hidden');
+    achievementsBtn.classList.add('hidden');
+    achievementsPanel.classList.add('hidden');
+    dailyBanner.classList.add('hidden');
+    if (dailyBannerInterval) { clearInterval(dailyBannerInterval); dailyBannerInterval = null; }
     hasPig = false;
     endRound();
     return;
@@ -1059,8 +1383,11 @@ walletBtn.addEventListener('click', async () => {
       bestScore = await getPlayerScore(addr);
       playerScoreEl.textContent = `Best: ${bestScore}`;
       gameHud.classList.remove('hidden');
+      achievementsBtn.classList.remove('hidden');
+      leaderboardBtn.classList.remove('hidden');
       submitScoreBtn.textContent = 'Start Round';
       submitScoreBtn.classList.remove('hidden');
+      startDailyBannerUpdates();
     } else {
       console.log('No pig found, showing mint panel');
       mintPanel.classList.remove('hidden');
@@ -1087,6 +1414,7 @@ mintBtn.addEventListener('click', async () => {
     gameHud.classList.remove('hidden');
     submitScoreBtn.textContent = 'Start Round';
     submitScoreBtn.classList.remove('hidden');
+    startDailyBannerUpdates();
   } catch (e) {
     console.error('Mint failed:', e);
     mintStatus.textContent = `Mint failed: ${e.message || e}`;
@@ -1149,9 +1477,9 @@ function applyPigAttributes(attrs) {
 
   // Apply speed bonus — affects actual movement speed!
   const speedMultiplier = 1 + (attrs.speedBonus / 20) * 0.5; // 0-20 → 1.0x-1.5x
-  CONFIG.walkSpeed = 1.5 * speedMultiplier;
-  CONFIG.runSpeed = 3 * speedMultiplier;
-  CONFIG.backwardSpeed = 1 * speedMultiplier;
+  CONFIG.walkSpeed = 3 * speedMultiplier;
+  CONFIG.runSpeed = 6 * speedMultiplier;
+  CONFIG.backwardSpeed = 2 * speedMultiplier;
 }
 
 // Blend pattern over original texture, preserving dark features (eyes, nostrils, mouth)
@@ -1450,9 +1778,10 @@ submitScoreBtn.addEventListener('click', async () => {
       // Call start_game on-chain (records timestamp)
       await startGame();
 
-      // Spawn coins using daily seed
+      // Spawn coins and power-ups using daily seed
       const seed = await getDailySeed();
       spawnCoins(seed);
+      spawnPowerUps(seed);
 
       // Reset pig position
       if (gameState.pig) {
@@ -1472,6 +1801,9 @@ submitScoreBtn.addEventListener('click', async () => {
 
       showBanner('GO!');
       playRoundSound(true);
+
+      // Grant rarity-based starting power-ups (Uncommon+)
+      grantRarityPowerUps();
     } catch (e) {
       console.error('Start game failed:', e);
       submitScoreBtn.textContent = 'Start Round';
@@ -1484,6 +1816,7 @@ async function endRound() {
   if (!roundState.active) return;
   roundState.active = false;
   clearCoins();
+  clearPowerUps();
 
   const finalScore = roundState.score;
   hudScore.textContent = `Round Over! Score: ${finalScore}`;
@@ -1519,6 +1852,7 @@ async function checkAndClaimAchievements(score) {
   const addr = getAddress();
   if (!addr) return;
   try {
+    // Score-based achievements
     const thresholds = [
       { id: 0, minScore: 100, name: 'Coin Collector' },
       { id: 1, minScore: 500, name: 'Coin Master' },
@@ -1540,14 +1874,58 @@ async function checkAndClaimAchievements(score) {
         }
       }
     }
+
+    // Daily Champion (id=4) — only attempt if player is #1 today
+    try {
+      const has4 = await hasAchievement(addr, 4);
+      if (!has4) {
+        const day = await getCurrentDay();
+        const lb = await getDailyLeaderboard(day);
+        if (lb.length > 0 && lb[0].player.toLowerCase() === addr.toLowerCase()) {
+          await claimAchievement(4);
+          showAchievementToast('Daily Champion');
+        }
+      }
+    } catch {}
+
+    // Streak Master (id=5) — only attempt if streak >= 3
+    try {
+      const has5 = await hasAchievement(addr, 5);
+      if (!has5) {
+        const streak = await getPlayerStreak(addr);
+        if (streak >= 3) {
+          await claimAchievement(5);
+          showAchievementToast('Streak Master');
+        }
+      }
+    } catch {}
   } catch {}
+
+  // Refresh daily banner after round
+  updateDailyBanner();
 }
 
 function updateRound(time) {
   if (!roundState.active) return;
 
-  const elapsed = (Date.now() - roundState.startTime) / 1000;
-  roundState.timeLeft = Math.max(0, ROUND_DURATION - elapsed);
+  const dt = gameState.clock.getDelta ? 0.016 : 0.016; // approx frame dt
+  const frameDt = Math.min(time - (updateRound._lastTime || 0), 0.1);
+  updateRound._lastTime = time;
+
+  // Update power-ups (returns true if time is frozen)
+  const isFrozen = updatePowerUps(frameDt > 0 ? frameDt : 0.016);
+
+  // Update timer (freeze pauses countdown)
+  if (!isFrozen) {
+    const elapsed = (Date.now() - roundState.startTime) / 1000;
+    roundState.timeLeft = Math.max(0, ROUND_DURATION - elapsed);
+  } else {
+    // Push startTime forward to compensate for frozen time
+    roundState.startTime += 16; // ~1 frame worth of ms
+  }
+
+  // Check power-up collisions
+  checkPowerUpCollisions();
 
   // Collect coins
   const collected = checkCoinCollisions();
@@ -1555,12 +1933,14 @@ function updateRound(time) {
     roundState.score += collected;
   }
 
-  // Animate coins
+  // Animate coins and power-ups
   animateCoins(time);
+  animatePowerUps(time);
 
-  // Update HUD
+  // Update HUD with power-up info
   const timeStr = Math.ceil(roundState.timeLeft);
-  hudScore.textContent = `Score: ${roundState.score} | Time: ${timeStr}s`;
+  const puText = getPowerUpHUDText();
+  hudScore.textContent = `Score: ${roundState.score} | Time: ${timeStr}s${puText}`;
 
   // End round when time's up
   if (roundState.timeLeft <= 0) {
@@ -1568,32 +1948,188 @@ function updateRound(time) {
   }
 }
 
-// Leaderboard
-leaderboardBtn.addEventListener('click', async () => {
+// Leaderboard with Today / All Time tabs
+let lbMode = 'alltime'; // 'today' | 'alltime'
+
+function renderLbEntries(entries) {
+  if (entries.length === 0) {
+    return '<div style="color:#888">No scores yet</div>';
+  }
+  return entries.map((e, i) => `
+    <div class="lb-row">
+      <span class="rank">#${i + 1}</span>
+      <span class="addr">${shortAddress(e.player)}</span>
+      <span class="score">${e.score}</span>
+    </div>
+  `).join('');
+}
+
+async function loadLeaderboard(mode) {
+  lbMode = mode;
   leaderboardList.innerHTML = 'Loading...';
-  leaderboardPanel.classList.remove('hidden');
+
+  // Update tab active state
+  document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
+  const activeTab = document.querySelector(`.lb-tab[data-mode="${mode}"]`);
+  if (activeTab) activeTab.classList.add('active');
 
   try {
-    const entries = await getLeaderboard();
-    if (entries.length === 0) {
-      leaderboardList.innerHTML = '<div style="color:#888">No scores yet</div>';
+    let entries;
+    if (mode === 'today') {
+      const day = await getCurrentDay();
+      entries = await getDailyLeaderboard(day);
     } else {
-      leaderboardList.innerHTML = entries.map((e, i) => `
-        <div class="lb-row">
-          <span class="rank">#${i + 1}</span>
-          <span class="addr">${shortAddress(e.player)}</span>
-          <span class="score">${e.score}</span>
-        </div>
-      `).join('');
+      entries = await getLeaderboard();
     }
+    leaderboardList.innerHTML = renderLbEntries(entries);
   } catch (e) {
     leaderboardList.innerHTML = '<div style="color:#f66">Failed to load</div>';
   }
+}
+
+leaderboardBtn.addEventListener('click', async () => {
+  leaderboardPanel.classList.remove('hidden');
+
+  // Inject tabs if not present
+  if (!leaderboardPanel.querySelector('.lb-tabs')) {
+    const tabsHtml = `<div class="lb-tabs">
+      <button class="lb-tab active" data-mode="alltime">All Time</button>
+      <button class="lb-tab" data-mode="today">Today</button>
+    </div>`;
+    leaderboardList.insertAdjacentHTML('beforebegin', tabsHtml);
+
+    leaderboardPanel.querySelectorAll('.lb-tab').forEach(tab => {
+      tab.addEventListener('click', () => loadLeaderboard(tab.dataset.mode));
+    });
+  }
+
+  await loadLeaderboard(lbMode);
 });
 
 closeLeaderboard.addEventListener('click', () => {
   leaderboardPanel.classList.add('hidden');
 });
+
+// ============================================================================
+// ACHIEVEMENTS SYSTEM
+// ============================================================================
+const ACHIEVEMENTS = [
+  { id: 0, icon: '🪙', name: 'Coin Collector', desc: 'Score 100+ points in a single round' },
+  { id: 1, icon: '💰', name: 'Coin Master', desc: 'Score 500+ points in a single round' },
+  { id: 2, icon: '🎮', name: 'Veteran', desc: 'Play 10+ game rounds' },
+  { id: 3, icon: '👑', name: 'Legend', desc: 'Score 1000+ points in a single round' },
+  { id: 4, icon: '🏆', name: 'Daily Champion', desc: 'Reach #1 on the Today leaderboard' },
+  { id: 5, icon: '🔥', name: 'Streak Master', desc: 'Play on 3+ consecutive days' },
+];
+
+achievementsBtn.addEventListener('click', async () => {
+  achievementsPanel.classList.remove('hidden');
+  await loadAchievements();
+});
+
+closeAchievements.addEventListener('click', () => {
+  achievementsPanel.classList.add('hidden');
+});
+
+async function loadAchievements() {
+  const addr = getAddress();
+  if (!addr) {
+    achievementsList.innerHTML = '<div style="color:#888">Connect wallet to view achievements</div>';
+    return;
+  }
+
+  achievementsList.innerHTML = 'Loading...';
+
+  try {
+    // Fetch all achievement statuses in parallel
+    const statuses = await Promise.all(
+      ACHIEVEMENTS.map(a => hasAchievement(addr, a.id))
+    );
+
+    // Get current streak for progress display
+    const streak = await getPlayerStreak(addr);
+    const score = await getPlayerScore(addr);
+    const games = await getGamesPlayed(addr);
+    const day = await getCurrentDay();
+    const dailyLb = await getDailyLeaderboard(day);
+    const isDailyChamp = dailyLb.length > 0 && dailyLb[0].player.toLowerCase() === addr.toLowerCase();
+
+    achievementsList.innerHTML = ACHIEVEMENTS.map((ach, i) => {
+      const unlocked = statuses[i];
+      const statusText = unlocked ? '✓ Unlocked' : getAchievementProgress(ach.id, score, games, streak, isDailyChamp);
+      return `
+        <div class="achievement-item ${unlocked ? 'unlocked' : 'locked'}">
+          <div class="achievement-icon">${ach.icon}</div>
+          <div class="achievement-info">
+            <div class="achievement-name">${ach.name}</div>
+            <div class="achievement-desc">${ach.desc}</div>
+            <div class="achievement-status">${statusText}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    console.error('Failed to load achievements:', e);
+    achievementsList.innerHTML = '<div style="color:#f66">Failed to load achievements</div>';
+  }
+}
+
+function getAchievementProgress(id, score, games, streak, isDailyChamp) {
+  switch (id) {
+    case 0: return `Progress: ${score}/100 points`;
+    case 1: return `Progress: ${score}/500 points`;
+    case 2: return `Progress: ${games}/10 games`;
+    case 3: return `Progress: ${score}/1000 points`;
+    case 4: return isDailyChamp ? 'Ready to claim!' : 'Not #1 today';
+    case 5: return `Progress: ${streak}/3 days streak`;
+    default: return 'Locked';
+  }
+}
+
+// Daily Challenge Banner
+const dailyBanner = document.getElementById('daily-banner');
+const dailyDayEl = document.getElementById('daily-day');
+const dailyCountdownEl = document.getElementById('daily-countdown');
+const dailyBestEl = document.getElementById('daily-best');
+const dailyStreakEl = document.getElementById('daily-streak');
+
+async function updateDailyBanner() {
+  try {
+    const addr = getAddress();
+    if (!addr) return;
+
+    const day = await getCurrentDay();
+    dailyDayEl.textContent = `🏆 Day #${day}`;
+
+    // Countdown to next day (UTC midnight)
+    const now = Math.floor(Date.now() / 1000);
+    const nextDay = (day + 1) * 86400;
+    const remaining = Math.max(0, nextDay - now);
+    const h = Math.floor(remaining / 3600);
+    const m = Math.floor((remaining % 3600) / 60);
+    dailyCountdownEl.textContent = `⏳ ${h}h ${m}m`;
+
+    // Player's daily best
+    const dailyScore = await getPlayerDailyScore(addr, day);
+    dailyBestEl.textContent = dailyScore > 0 ? `Today: ${dailyScore}` : '';
+
+    // Streak
+    const streak = await getPlayerStreak(addr);
+    dailyStreakEl.textContent = streak > 0 ? `🔥 ${streak}d streak` : '';
+
+    dailyBanner.classList.remove('hidden');
+  } catch (e) {
+    console.warn('Daily banner update failed:', e);
+  }
+}
+
+// Refresh daily banner every 60s
+let dailyBannerInterval = null;
+function startDailyBannerUpdates() {
+  updateDailyBanner();
+  if (dailyBannerInterval) clearInterval(dailyBannerInterval);
+  dailyBannerInterval = setInterval(updateDailyBanner, 60000);
+}
 
 // ============================================================================
 // MAIN GAME LOOP
@@ -1660,5 +2196,14 @@ async function init() {
     loadingScreen.querySelector('.loading-spinner').style.display = 'none';
   }
 }
+
+// ============================================================================
+// DEMO MODE: Expose contract functions to window for interception
+// ============================================================================
+window.getLeaderboard = getLeaderboard;
+window.getDailyLeaderboard = getDailyLeaderboard;
+window.getPlayerDailyScore = getPlayerDailyScore;
+window.getPlayerStreak = getPlayerStreak;
+window.getCurrentDay = getCurrentDay;
 
 init();

@@ -1,11 +1,9 @@
 import { Contract, RpcProvider, CallData, cairo } from "starknet";
 import { getAccount } from "./controller.js";
-
-const CONTRACT_ADDRESS = "0x077980c0fc1ef925fa1d962c6457ae86ba18e8a151570ec9af6e9371124530bc";
-const VRF_PROVIDER = "0x051fea4450da9d6aee758bdeba88b2f665bcbf549d2c61421aa724e9ac0ced8f";
+import { CONTRACT_ADDRESS, VRF_PROVIDER, RPC_URL } from "./config.js";
 
 const provider = new RpcProvider({
-  nodeUrl: "https://api.cartridge.gg/x/starknet/sepolia",
+  nodeUrl: RPC_URL,
 });
 
 // Cache ABI fetched from chain
@@ -219,6 +217,61 @@ export async function getGamesPlayed(playerAddress) {
   const contract = await getReadContract();
   try {
     const result = await contract.call("get_games_played", [playerAddress]);
+    return Number(result);
+  } catch {
+    return 0;
+  }
+}
+
+// Read: daily leaderboard
+export async function getDailyLeaderboard(day) {
+  const contract = await getReadContract();
+  try {
+    const size = Number(await contract.call("get_daily_leaderboard_size", [day]));
+    const entries = [];
+    for (let i = 0; i < size; i++) {
+      const entry = await contract.call("get_daily_leaderboard_entry", [day, i]);
+      const player = entry.player ?? entry[0];
+      const score = entry.score ?? entry[1];
+      entries.push({
+        player: "0x" + BigInt(player).toString(16),
+        score: Number(score),
+      });
+    }
+    return entries;
+  } catch (e) {
+    console.error('getDailyLeaderboard error:', e);
+    return [];
+  }
+}
+
+// Read: current day number
+export async function getCurrentDay() {
+  const contract = await getReadContract();
+  try {
+    const result = await contract.call("get_current_day", []);
+    return Number(result);
+  } catch {
+    return 0;
+  }
+}
+
+// Read: player daily score
+export async function getPlayerDailyScore(playerAddress, day) {
+  const contract = await getReadContract();
+  try {
+    const result = await contract.call("get_player_daily_score", [playerAddress, day]);
+    return Number(result);
+  } catch {
+    return 0;
+  }
+}
+
+// Read: player streak
+export async function getPlayerStreak(playerAddress) {
+  const contract = await getReadContract();
+  try {
+    const result = await contract.call("get_player_streak", [playerAddress]);
     return Number(result);
   } catch {
     return 0;

@@ -34,6 +34,12 @@ pub trait IPigNFT<TContractState> {
     fn get_game_start(self: @TContractState, player: ContractAddress) -> u64;
     fn get_daily_seed(self: @TContractState) -> felt252;
     fn get_games_played(self: @TContractState, player: ContractAddress) -> u32;
+    // Daily challenge
+    fn get_daily_leaderboard_entry(self: @TContractState, day: u64, rank: u32) -> LeaderboardEntry;
+    fn get_daily_leaderboard_size(self: @TContractState, day: u64) -> u32;
+    fn get_player_daily_score(self: @TContractState, player: ContractAddress, day: u64) -> u32;
+    fn get_current_day(self: @TContractState) -> u64;
+    fn get_player_streak(self: @TContractState, player: ContractAddress) -> u32;
 }
 
 #[starknet::contract]
@@ -82,6 +88,13 @@ mod PigNFT {
         player_scores: Map<ContractAddress, u32>,
         // Achievements
         achievements: Map<(ContractAddress, u8), bool>,
+        // Daily challenge
+        daily_scores: Map<(u64, ContractAddress), u32>,
+        daily_leaderboard: Map<(u64, u32), LeaderboardEntry>,
+        daily_leaderboard_size: Map<u64, u32>,
+        // Streak tracking: last_play_day + current_streak
+        last_play_day: Map<ContractAddress, u64>,
+        player_streak: Map<ContractAddress, u32>,
         // Components
         #[substorage(v0)]
         erc721: ERC721Component::Storage,
@@ -232,6 +245,31 @@ mod PigNFT {
             // Reset game start so same round can't submit twice
             self.game_start.entry(caller).write(0);
 
+            // Track daily score + streak
+            let day: u64 = now / SECONDS_PER_DAY;
+            let daily_best = self.daily_scores.entry((day, caller)).read();
+            if score > daily_best {
+                self.daily_scores.entry((day, caller)).write(score);
+                InternalImpl::update_daily_leaderboard(ref self, day, caller, score);
+            }
+
+            // Update streak
+            let last_day = self.last_play_day.entry(caller).read();
+            if day != last_day {
+                if day == last_day + 1 {
+                    // Consecutive day
+                    let streak = self.player_streak.entry(caller).read();
+                    self.player_streak.entry(caller).write(streak + 1);
+                } else if last_day == 0 {
+                    // First time playing
+                    self.player_streak.entry(caller).write(1);
+                } else {
+                    // Streak broken
+                    self.player_streak.entry(caller).write(1);
+                }
+                self.last_play_day.entry(caller).write(day);
+            }
+
             let current_best = self.player_scores.entry(caller).read();
             if score <= current_best {
                 return;
@@ -314,7 +352,7 @@ mod PigNFT {
         fn claim_achievement(ref self: ContractState, achievement_id: u8) {
             let caller = get_caller_address();
             assert!(self.has_pig.entry(caller).read(), "NO_PIG");
-            assert!(achievement_id <= 3, "INVALID_ACHIEVEMENT");
+            assert!(achievement_id <= 5, "INVALID_ACHIEVEMENT");
             assert!(
                 !self.achievements.entry((caller, achievement_id)).read(),
                 "ALREADY_CLAIMED",
@@ -333,9 +371,20 @@ mod PigNFT {
             } else if achievement_id == 2 {
                 // "Veteran" — played 10+ games
                 assert!(games >= 10, "NOT_ENOUGH_GAMES");
-            } else {
+            } else if achievement_id == 3 {
                 // "Legend" — score >= 1000
                 assert!(score >= 1000, "SCORE_TOO_LOW");
+            } else if achievement_id == 4 {
+                // "Daily Champion" — #1 on today's leaderboard
+                let day: u64 = get_block_timestamp() / SECONDS_PER_DAY;
+                let daily_size = self.daily_leaderboard_size.entry(day).read();
+                assert!(daily_size > 0, "NO_DAILY_SCORES");
+                let top = self.daily_leaderboard.entry((day, 0)).read();
+                assert!(top.player == caller, "NOT_DAILY_CHAMPION");
+            } else {
+                // "Streak Master" — 3+ day streak
+                let streak = self.player_streak.entry(caller).read();
+                assert!(streak >= 3, "STREAK_TOO_SHORT");
             }
 
             self.achievements.entry((caller, achievement_id)).write(true);
@@ -387,6 +436,108 @@ mod PigNFT {
 
         fn get_games_played(self: @ContractState, player: ContractAddress) -> u32 {
             self.games_played.entry(player).read()
+        }
+
+        fn get_daily_leaderboard_entry(
+            self: @ContractState, day: u64, rank: u32,
+        ) -> LeaderboardEntry {
+            self.daily_leaderboard.entry((day, rank)).read()
+        }
+
+        fn get_daily_leaderboard_size(self: @ContractState, day: u64) -> u32 {
+            self.daily_leaderboard_size.entry(day).read()
+        }
+
+        fn get_player_daily_score(
+            self: @ContractState, player: ContractAddress, day: u64,
+        ) -> u32 {
+            self.daily_scores.entry((day, player)).read()
+        }
+
+        fn get_current_day(self: @ContractState) -> u64 {
+            get_block_timestamp() / SECONDS_PER_DAY
+        }
+
+        fn get_player_streak(self: @ContractState, player: ContractAddress) -> u32 {
+            self.player_streak.entry(player).read()
+        }
+    }
+
+    #[generate_trait]
+    impl InternalImpl of InternalTrait {
+        fn update_daily_leaderboard(
+            ref self: ContractState, day: u64, player: ContractAddress, score: u32,
+        ) {
+            let size = self.daily_leaderboard_size.entry(day).read();
+
+            // Remove existing entry for this player if present
+            let mut rank: u32 = size;
+            let mut i: u32 = 0;
+            loop {
+                if i >= size {
+                    break;
+                }
+                let entry = self.daily_leaderboard.entry((day, i)).read();
+                if entry.player == player {
+                    let mut j = i;
+                    loop {
+                        if j + 1 >= size {
+                            break;
+                        }
+                        let next = self.daily_leaderboard.entry((day, j + 1)).read();
+                        self.daily_leaderboard.entry((day, j)).write(next);
+                        j += 1;
+                    };
+                    rank = size - 1;
+                    break;
+                }
+                i += 1;
+            };
+
+            let effective_size = if rank < size {
+                rank
+            } else {
+                size
+            };
+
+            // Find insert position
+            let mut insert_pos: u32 = effective_size;
+            let mut k: u32 = 0;
+            loop {
+                if k >= effective_size {
+                    break;
+                }
+                let entry = self.daily_leaderboard.entry((day, k)).read();
+                if score > entry.score {
+                    insert_pos = k;
+                    break;
+                }
+                k += 1;
+            };
+
+            if insert_pos < MAX_LEADERBOARD {
+                let new_size = if effective_size < MAX_LEADERBOARD {
+                    effective_size + 1
+                } else {
+                    MAX_LEADERBOARD
+                };
+
+                let mut m: u32 = new_size - 1;
+                loop {
+                    if m <= insert_pos {
+                        break;
+                    }
+                    let prev = self.daily_leaderboard.entry((day, m - 1)).read();
+                    self.daily_leaderboard.entry((day, m)).write(prev);
+                    m -= 1;
+                };
+
+                self
+                    .daily_leaderboard
+                    .entry((day, insert_pos))
+                    .write(LeaderboardEntry { player, score });
+                self.daily_leaderboard_size.entry(day).write(new_size);
+            }
         }
     }
 }

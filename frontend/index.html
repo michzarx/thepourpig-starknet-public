@@ -49,11 +49,27 @@
         <button id="close-leaderboard">Close</button>
     </div>
 
+    <!-- Daily Challenge Banner -->
+    <div id="daily-banner" class="hidden">
+        <span id="daily-day">🏆 Daily Challenge</span>
+        <span id="daily-countdown"></span>
+        <span id="daily-best"></span>
+        <span id="daily-streak"></span>
+    </div>
+
     <!-- Game HUD -->
     <div id="game-hud" class="hidden">
         <div id="hud-score">Score: 0</div>
         <button id="submit-score-btn" class="hidden">Start Round</button>
-        <button id="leaderboard-btn">Leaderboard</button>
+        <button id="leaderboard-btn" class="hidden">Leaderboard</button>
+        <button id="achievements-btn" class="hidden">Achievements</button>
+    </div>
+
+    <!-- Achievements Panel -->
+    <div id="achievements-panel" class="hidden">
+        <h3>Achievements</h3>
+        <div id="achievements-list"></div>
+        <button id="close-achievements">Close</button>
     </div>
 
     <div id="controls-hint">
@@ -67,5 +83,9 @@
     </div>
 
     <script type="module" src="/src/main.js"></script>
+    <!--
+    DEMO MODE: Uncomment this script for recording with fake leaderboard data
+    <script type="module" src="/src/demo-mode.js"></script>
+    -->
 </body>
 </html>

@@ -1,8 +1,6 @@
 import Controller from "@cartridge/controller";
 import { constants } from "starknet";
-
-const CONTRACT_ADDRESS = "0x077980c0fc1ef925fa1d962c6457ae86ba18e8a151570ec9af6e9371124530bc";
-const VRF_PROVIDER = "0x051fea4450da9d6aee758bdeba88b2f665bcbf549d2c61421aa724e9ac0ced8f";
+import { CONTRACT_ADDRESS, VRF_PROVIDER } from "./config.js";
 
 const controller = new Controller({
   appId: "thepourpig",
