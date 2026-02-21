@@ -1,13 +1,13 @@
 # Static assets - serve directly
-/assets/:splat  /assets/:splat  200
-/*.glb        :splat           200
-/*.js         :splat           200
-/*.css        :splat           200
-/*.svg        :splat           200
-/*.json       :splat           200
-/*.png        :splat           200
-/*.jpg        :splat           200
-/*.woff2      :splat           200
+/assets/*    /assets/:splat   200
+/*.glb       /:splat        200
+/*.js        /:splat        200
+/*.css       /:splat        200
+/*.svg       /:splat        200
+/*.json      /:splat        200
+/*.png       /:splat        200
+/*.jpg       /:splat        200
+/*.woff2     /:splat        200
 
 # SPA fallback - everything else goes to index.html
-/*            /index.html      200
+/*           /index.html    200

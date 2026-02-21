@@ -1,0 +1,14 @@
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
+
+# SPA routing with static asset fallback
+# Netlify serves static files automatically if they exist
+# Only redirect non-file routes to index.html
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false

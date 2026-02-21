@@ -1336,6 +1336,9 @@ const achievementsPanel = document.getElementById('achievements-panel');
 const achievementsList = document.getElementById('achievements-list');
 const closeAchievements = document.getElementById('close-achievements');
 
+console.log('Leaderboard button element:', leaderboardBtn);
+console.log('Leaderboard panel element:', leaderboardPanel);
+
 let hasPig = false;
 let bestScore = 0;
 
@@ -1965,6 +1968,7 @@ function renderLbEntries(entries) {
 }
 
 async function loadLeaderboard(mode) {
+  console.log('loadLeaderboard called with mode:', mode);
   lbMode = mode;
   leaderboardList.innerHTML = 'Loading...';
 
@@ -1977,21 +1981,28 @@ async function loadLeaderboard(mode) {
     let entries;
     if (mode === 'today') {
       const day = await getCurrentDay();
+      console.log('Fetching daily leaderboard for day:', day);
       entries = await getDailyLeaderboard(day);
     } else {
+      console.log('Fetching all-time leaderboard');
       entries = await getLeaderboard();
     }
+    console.log('Leaderboard entries fetched:', entries.length, entries);
     leaderboardList.innerHTML = renderLbEntries(entries);
   } catch (e) {
+    console.error('loadLeaderboard error:', e);
     leaderboardList.innerHTML = '<div style="color:#f66">Failed to load</div>';
   }
 }
 
 leaderboardBtn.addEventListener('click', async () => {
+  console.log('Leaderboard button clicked');
   leaderboardPanel.classList.remove('hidden');
+  console.log('Panel hidden class removed, classes:', leaderboardPanel.classList.toString());
 
   // Inject tabs if not present
   if (!leaderboardPanel.querySelector('.lb-tabs')) {
+    console.log('Injecting tabs');
     const tabsHtml = `<div class="lb-tabs">
       <button class="lb-tab active" data-mode="alltime">All Time</button>
       <button class="lb-tab" data-mode="today">Today</button>
@@ -2003,6 +2014,7 @@ leaderboardBtn.addEventListener('click', async () => {
     });
   }
 
+  console.log('Loading leaderboard with mode:', lbMode);
   await loadLeaderboard(lbMode);
 });
 
@@ -2099,7 +2111,7 @@ async function updateDailyBanner() {
     if (!addr) return;
 
     const day = await getCurrentDay();
-    dailyDayEl.textContent = `🏆 Day #${day}`;
+    dailyDayEl.textContent = `🏆 Daily Challenge`;
 
     // Countdown to next day (UTC midnight)
     const now = Math.floor(Date.now() / 1000);
@@ -2111,11 +2123,11 @@ async function updateDailyBanner() {
 
     // Player's daily best
     const dailyScore = await getPlayerDailyScore(addr, day);
-    dailyBestEl.textContent = dailyScore > 0 ? `Today: ${dailyScore}` : '';
+    dailyBestEl.textContent = dailyScore > 0 ? `Your Best: ${dailyScore}` : '';
 
     // Streak
     const streak = await getPlayerStreak(addr);
-    dailyStreakEl.textContent = streak > 0 ? `🔥 ${streak}d streak` : '';
+    dailyStreakEl.textContent = streak > 0 ? `🔥 ${streak} day` : '';
 
     dailyBanner.classList.remove('hidden');
   } catch (e) {

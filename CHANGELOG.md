@@ -4,6 +4,54 @@ All notable changes to The Pour Pig project will be documented in this file.
 
 ---
 
+## [0.4.2] - February 21, 2026
+
+### 🛠 Architecture
+
+- **Netlify Deployment Configuration**
+  - Added root `netlify.toml` with build settings (base: frontend, publish: dist)
+  - Configured SPA routing with `force=false` to allow static asset serving
+  - Added `frontend/public/_redirects` file for explicit static asset rules
+  - Static assets (.glb, .js, .css, .svg, .json, images, fonts) served directly without redirect
+  - SPA fallback for all other routes to index.html
+
+### ✨ Frontend
+
+- **Typography Overhaul**
+  - Added Google Fonts: **Fredoka One** (headings, buttons) and **Nunito** (body, UI)
+  - All text now uses playful, rounded fonts matching the game's casual aesthetic
+
+- **UI Redesign - 3D Button Style**
+  - Wallet button: pill-shaped, 3D shadow effect, gradient background (#ff9a6a to #ff6b35), white border
+  - Mint button: extra-bold, larger size (1.4rem), 3-tier shadow, inset highlights for depth
+  - HUD buttons (Score/Leaderboard/Achievements): glassmorphic style with gradient overlays
+  - All buttons feature bouncy cubic-bezier animations, letter-spacing, and press/active states
+
+- **Polished Visual Details**
+  - Headings: Fredoka One with letter-spacing and text shadows
+  - Loading screen: larger title (3.5rem), layered shadow effect
+  - Leaderboard/Achievement panels: enhanced typography with consistent spacing
+  - Round banners & score popups: Fredoka One font for impact
+
+- **UI Text Updates**
+  - Daily banner: "Day #X" → "Daily Challenge"
+  - Daily best: "Today: X" → "Your Best: X"
+  - Streak: "X day streak" → "X day"
+  - Cleaner, more beginner-friendly copy
+
+- **Demo Mode Support**
+  - Added demo-mode.js integration hook (commented out in index.html)
+  - For easy recording with fake leaderboard data
+
+### 🐛 Bugfixes
+
+- **Fixed 404 errors for 3D model files on Netlify**
+  - `poorPIG.glb` and `coin.glb` now load correctly in production
+  - `_redirects` file format is more reliable than TOML-based redirects
+  - Explicit asset rules prevent Netlify from redirecting file requests to SPA handler
+
+---
+
 ## [0.4.1] - February 12, 2026
 
 ### ✨ Frontend
