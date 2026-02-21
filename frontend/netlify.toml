@@ -2,6 +2,41 @@
   command = "npm run build"
   publish = "dist"
 
+# SPA routing - only redirect pages, not static assets
+# Rules are processed in order, so put specific paths first
+
+# Static assets - serve as-is (no redirect)
+[[redirects]]
+  from = "/assets/:splat"
+  to = "/assets/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*.js"
+  to = "/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*.css"
+  to = "/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*.glb"
+  to = "/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*.svg"
+  to = "/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*.json"
+  to = "/:splat"
+  status = 200
+
+# Everything else - SPA fallback to index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"
