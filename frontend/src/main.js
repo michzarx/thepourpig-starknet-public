@@ -554,6 +554,11 @@ function exitIntroOrbit() {
     gameState.cameraCurrentRotation = gameState.introAngle;
 }
 
+function startIntroOrbit() {
+    gameState.introOrbit = true;
+    gameState.introAngle = 0;
+}
+
 function updateCamera(deltaTime) {
     if (!gameState.pig) return;
 
@@ -1418,6 +1423,7 @@ mintBtn.addEventListener('click', async () => {
     submitScoreBtn.textContent = 'Start Round';
     submitScoreBtn.classList.remove('hidden');
     startDailyBannerUpdates();
+    startIntroOrbit();
   } catch (e) {
     console.error('Mint failed:', e);
     mintStatus.textContent = `Mint failed: ${e.message || e}`;
@@ -1433,7 +1439,7 @@ async function showPigStats(tokenId) {
   const patternName = getPatternName(attrs.colorHue, attrs.rarity);
   document.getElementById('pig-color').textContent = `Pattern: ${patternName}`;
   document.getElementById('pig-speed').textContent = `Speed: +${attrs.speedBonus}`;
-  document.getElementById('pig-size').textContent = `Size: 100%`;
+  document.getElementById('pig-size').classList.add('hidden');
   document.getElementById('pig-rarity').textContent = `Rarity: ${rarityName(attrs.rarity)}`;
   pigStats.classList.remove('hidden');
 
@@ -2254,7 +2260,7 @@ window.addEventListener('demo-preview-pig', (event) => {
 
   if (pigColorEl) pigColorEl.textContent = `Pattern: ${patternName}`;
   if (pigSpeedEl) pigSpeedEl.textContent = `Speed: +${preset.speedBonus}`;
-  if (pigSizeEl) pigSizeEl.textContent = `Size: 100%`;
+  if (pigSizeEl) pigSizeEl.classList.add('hidden');
   if (pigRarityEl) pigRarityEl.textContent = `Rarity: ${rarityName(preset.rarity)}`;
 
   console.log('%c✅ Pig preview applied!', 'color: #4ecdc4; font-weight: bold');
