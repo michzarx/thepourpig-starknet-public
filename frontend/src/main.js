@@ -19,14 +19,14 @@ import {
 // PATTERN NAMES — VRF-driven unique pig skins
 // ============================================================================
 const PATTERN_LIST = [
-  'Houndstooth',   // 千鸟格
-  'Stripes',       // 条纹
-  'Polka Dots',    // 波点
-  'Plaid',         // 格子
-  'Stars',         // 星星
-  'Diamond',       // 菱形
-  'Chevron',       // 人字纹
-  'Camo',          // 迷彩
+  'Houndstooth',
+  'Stripes',
+  'Polka Dots',
+  'Plaid',
+  'Stars',
+  'Diamond',
+  'Chevron',
+  'Camo',
 ];
 
 function getPatternName(colorHue, rarity) {
@@ -136,18 +136,18 @@ function setupLighting() {
     scene.add(ambientLight);
 
     const sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    sunLight.position.set(50, 80, 30);
+    sunLight.position.set(20, 100, 10);
     sunLight.castShadow = true;
-    sunLight.shadow.mapSize.width = 2048;
-    sunLight.shadow.mapSize.height = 2048;
+    sunLight.shadow.mapSize.width = 4096;
+    sunLight.shadow.mapSize.height = 4096;
     sunLight.shadow.camera.near = 0.5;
     sunLight.shadow.camera.far = 200;
     sunLight.shadow.camera.left = -20;
     sunLight.shadow.camera.right = 20;
     sunLight.shadow.camera.top = 20;
     sunLight.shadow.camera.bottom = -20;
-    sunLight.shadow.bias = -0.001;
-    sunLight.shadow.normalBias = 0.02;
+    sunLight.shadow.bias = -0.0005;
+    sunLight.shadow.normalBias = 0.1;
     scene.add(sunLight);
 
     const hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x3d5c3d, 0.4);
@@ -1590,7 +1590,7 @@ function hslToRgb(h, s, l) {
   return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 }
 
-// Pattern 0: Houndstooth (千鸟格)
+// Pattern 0: Houndstooth
 function drawHoundstooth(ctx, size, color) {
   const cellSize = size / 16;
   ctx.fillStyle = color;
@@ -1622,7 +1622,7 @@ function drawHoundstooth(ctx, size, color) {
   }
 }
 
-// Pattern 1: Stripes (条纹)
+// Pattern 1: Stripes
 function drawStripes(ctx, size, color, accent) {
   const stripeW = size / 12;
   for (let i = 0; i < 12; i++) {
@@ -1633,7 +1633,7 @@ function drawStripes(ctx, size, color, accent) {
   }
 }
 
-// Pattern 2: Polka Dots (波点)
+// Pattern 2: Polka Dots
 function drawPolkaDots(ctx, size, color) {
   const dotR = size / 24;
   const spacing = size / 8;
@@ -1648,7 +1648,7 @@ function drawPolkaDots(ctx, size, color) {
   }
 }
 
-// Pattern 3: Plaid (格子)
+// Pattern 3: Plaid
 function drawPlaid(ctx, size, color, accent) {
   ctx.globalAlpha = 0.4;
   const bandW = size / 8;
@@ -1679,7 +1679,7 @@ function drawPlaid(ctx, size, color, accent) {
   ctx.globalAlpha = 1;
 }
 
-// Pattern 4: Stars (星星)
+// Pattern 4: Stars
 function drawStars(ctx, size, color) {
   const spacing = size / 6;
   ctx.fillStyle = color;
@@ -1708,7 +1708,7 @@ function drawStar(ctx, cx, cy, spikes, outerR, innerR) {
   ctx.fill();
 }
 
-// Pattern 5: Diamond (菱形)
+// Pattern 5: Diamond
 function drawDiamond(ctx, size, color, accent) {
   const cellW = size / 8;
   const cellH = size / 8;
@@ -1728,7 +1728,7 @@ function drawDiamond(ctx, size, color, accent) {
   }
 }
 
-// Pattern 6: Chevron (人字纹)
+// Pattern 6: Chevron
 function drawChevron(ctx, size, color) {
   const rowH = size / 10;
   ctx.strokeStyle = color;
@@ -1746,7 +1746,7 @@ function drawChevron(ctx, size, color) {
   }
 }
 
-// Pattern 7: Camo (迷彩)
+// Pattern 7: Camo
 function drawCamo(ctx, size, hue) {
   const colors = [
     hslToRgb(hue, 0.3, 0.3),
@@ -2217,5 +2217,38 @@ window.getDailyLeaderboard = getDailyLeaderboard;
 window.getPlayerDailyScore = getPlayerDailyScore;
 window.getPlayerStreak = getPlayerStreak;
 window.getCurrentDay = getCurrentDay;
+
+// DEMO MODE: Listen for pig preview events from demo-mode.js
+window.addEventListener('demo-preview-pig', (event) => {
+  const preset = event.detail;
+  console.log('Applying pig preset:', preset);
+
+  // Update pig attributes
+  pigAttrs = {
+    colorHue: preset.colorHue,
+    rarity: preset.rarity,
+    speedBonus: preset.speedBonus,
+    sizeScale: preset.sizeScale,
+  };
+
+  // Apply to the pig model if it exists
+  if (gameState.pig) {
+    applyPigAttributes(pigAttrs);
+  }
+
+  // Update the UI stats display
+  const patternName = getPatternName(preset.colorHue, preset.rarity);
+  const pigColorEl = document.getElementById('pig-color');
+  const pigSpeedEl = document.getElementById('pig-speed');
+  const pigSizeEl = document.getElementById('pig-size');
+  const pigRarityEl = document.getElementById('pig-rarity');
+
+  if (pigColorEl) pigColorEl.textContent = `Pattern: ${patternName}`;
+  if (pigSpeedEl) pigSpeedEl.textContent = `Speed: +${preset.speedBonus}`;
+  if (pigSizeEl) pigSizeEl.textContent = `Size: ${preset.sizeScale}%`;
+  if (pigRarityEl) pigRarityEl.textContent = `Rarity: ${rarityName(preset.rarity)}`;
+
+  console.log('%c✅ Pig preview applied!', 'color: #4ecdc4; font-weight: bold');
+});
 
 init();

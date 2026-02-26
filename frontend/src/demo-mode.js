@@ -6,6 +6,7 @@
  * 2. Open the game
  * 3. Run `enableDemoMode()` in browser console
  * 4. Leaderboard will be populated with fake data
+ * 5. Run `previewPig(1)`, `previewPig(2)`, etc. to see different pig styles
  */
 
 // Fake data
@@ -15,6 +16,18 @@ const DEMO_ADDRESSES = [
   '0x9abc...def0',
   '0x1111...2222',
   '0x3333...4444',
+];
+
+// Pre-configured pig presets for demo recording
+const PIG_PRESETS = [
+  { name: 'Red Common',      colorHue: 0,   rarity: 0, speedBonus: 5,  sizeScale: 100 },
+  { name: 'Cyan Rare',       colorHue: 180, rarity: 2, speedBonus: 12, sizeScale: 105 },
+  { name: 'Purple Legendary',colorHue: 270, rarity: 3, speedBonus: 18, sizeScale: 90  },
+  { name: 'Green Uncommon',  colorHue: 120, rarity: 1, speedBonus: 8,  sizeScale: 110 },
+  { name: 'Orange Rare',     colorHue: 30,  rarity: 2, speedBonus: 14, sizeScale: 95  },
+  { name: 'Pink Common',     colorHue: 330, rarity: 0, speedBonus: 3,  sizeScale: 100 },
+  { name: 'Blue Legendary',  colorHue: 240, rarity: 3, speedBonus: 20, sizeScale: 85  },
+  { name: 'Yellow Uncommon', colorHue: 60,  rarity: 1, speedBonus: 10, sizeScale: 115 },
 ];
 
 /**
@@ -55,6 +68,34 @@ window.enableDemoMode = () => {
 
   console.log('%c✅ Demo mode enabled! Leaderboards will show fake data.', 'color: #4ecdc4; font-weight: bold');
   console.log('%cRun refreshLeaderboard() to update the display.', 'color: #666');
+  console.log('%c🐷 Run previewPig(1-8) to see different pig styles!', 'color: #ff9500; font-weight: bold');
+};
+
+/**
+ * Preview different pig styles for recording
+ * Usage: previewPig(1) for preset 1, previewPig(2) for preset 2, etc.
+ */
+window.previewPig = (presetIndex) => {
+  const idx = (presetIndex - 1) % PIG_PRESETS.length;
+  const preset = PIG_PRESETS[idx];
+
+  console.log(`%c🐷 Loading: ${preset.name}`, 'color: #ff9500; font-size: 14px; font-weight: bold');
+  console.log(`  Pattern: ${preset.colorHue + preset.rarity * 37 % 8}/8 | Rarity: ${preset.rarity}/3 | Speed: +${preset.speedBonus} | Size: ${preset.sizeScale}%`);
+
+  // Trigger custom event that main.js listens for
+  window.dispatchEvent(new CustomEvent('demo-preview-pig', { detail: preset }));
+};
+
+/**
+ * List all available pig presets
+ */
+window.listPigPresets = () => {
+  console.log('%c🐷 Available Pig Presets:', 'color: #ff9500; font-size: 14px; font-weight: bold');
+  PIG_PRESETS.forEach((p, i) => {
+    const patternIdx = (p.colorHue + p.rarity * 37) % 8;
+    const rarityNames = ['Common', 'Uncommon', 'Rare', 'Legendary'];
+    console.log(`  ${i + 1}. ${p.name.padEnd(18)} | Pattern: ${patternIdx} | Rarity: ${rarityNames[p.rarity]} | Speed: +${p.speedBonus} | Size: ${p.sizeScale}%`);
+  });
 };
 
 /**

@@ -15,19 +15,46 @@
 - [ ] Test microphone (if recording voiceover) / 测试麦克风（如果录制旁白）
 - [ ] Choose background music (30-second loop, upbeat) / 选择背景音乐（30秒循环，欢快风格）
 
-### Game State Preparation / 游戏状态准备
-- [ ] **Account 1 (Main Demo)**: Fresh or existing? / **主账号（演示用）**：新账号还是现有账号？
-  - [ ] If fresh: Test Cartridge signup flow / 如果是新的：测试Cartridge注册流程
-  - [ ] If existing: Note down existing pigs/achievements / 如果是现有的：记录现有的猪和成就
-- [ ] **Account 2 (Leaderboard filler)**: Create second account / **第二账号（填充排行榜）**：创建第二个账号
-  - [ ] Mint at least 1 pig / 至少mint 1只猪
-  - [ ] Play 2-3 rounds, submit scores (200-400 range) / 玩2-3轮，提交分数（200-400范围）
-- [ ] **Today's Leaderboard**: Ensure 3-5 entries / **今日排行榜**：确保有3-5个条目
-  - [ ] Submit different scores from multiple accounts / 从多个账号提交不同分数
-  - [ ] Verify "Today" tab shows rankings / 验证"Today"标签显示排名
+---
+
+### 🎯 Choose Your Approach / 选择你的方案
+
+**⚡ Option A - Demo Mode (Recommended) / 选项A - Demo模式（推荐）**
+- ✅ No extra accounts needed / 不需要额外账号
+- ✅ No manual gameplay for filler data / 不需要手动玩游戏填充数据
+- ✅ One command to populate leaderboards / 一条命令填充排行榜
+- ⏱️ Setup time: ~2 minutes / 准备时间：约2分钟
+
+**🔐 Option B - Real Data (Authentic) / 选项B - 真实数据（真实）**
+- ✅ All real blockchain data / 全部真实区块链数据
+- ✅ Can verify all transactions on StarkScan / 可在StarkScan上验证所有交易
+- ⏱️ Setup time: ~30 minutes / 准备时间：约30分钟
+
+---
+
+### Option A: Demo Mode Setup (Quick) / 选项A：Demo模式设置（快速）
+- [ ] **Enable Demo Mode in code** / **在代码中启用Demo模式** (find the details below)
+  - [ ] Open `frontend/index.html` / 打开 `frontend/index.html`
+  - [ ] Uncomment demo-mode script line (remove `<!--` and `-->`) / 取消注释demo-mode脚本行
+  - [ ] Redeploy or test locally / 重新部署或本地测试
+- [ ] **Test activation** / **测试激活**
+  - [ ] Open site in browser / 在浏览器中打开网站
+  - [ ] Press F12 → Console / 按F12 → 控制台
+  - [ ] Run `enableDemoMode()` / 运行 `enableDemoMode()`
+  - [ ] Click Leaderboard → Verify fake data shows / 点击排行榜 → 验证假数据显示
+- [ ] **🐷 Test Pig Preview (for recording different pigs)** / **测试猪预览（用于录制不同的猪）**
+  - [ ] Run `listPigPresets()` to see all options / 运行 `listPigPresets()` 查看所有选项
+  - [ ] Run `previewPig(1)`, `previewPig(2)`, etc. to switch styles / 运行 `previewPig(1)`, `previewPig(2)` 等切换样式
+  - [ ] Choose 3 best-looking pigs for recording / 选择3只最好看的猪用于录制
+- [ ] **Account 1 (Main Demo)** / **主账号（演示用）**
+  - [ ] Fresh or existing? / 新账号还是现有账号？
+  - [ ] If fresh: Test Cartridge signup / 如果是新的：测试Cartridge注册
+  - [ ] If existing: Note existing pigs/achievements / 如果是现有的：记录现有的猪和成就
+- [ ] **Skip Option B → Go to Game Mechanics Practice** / **跳过选项B → 进入游戏机制练习**
 
 ### Test Mint for Visual Variety / 测试Mint以获得视觉多样性
-- [ ] Mint 5-10 pigs to find good visual examples / Mint 5-10只猪找到好的视觉示例
+- [ ] **Skip if using Demo Mode** (use `previewPig()` instead) / **如果使用Demo模式则跳过**（改用 `previewPig()`）
+- [ ] OR Mint 5-10 pigs to find good visual examples / 或 Mint 5-10只猪找到好的视觉示例
   - [ ] At least 1 Legendary (for rarity showcase) / 至少1只Legendary（用于展示稀有度）
   - [ ] At least 1 with distinct pattern/color / 至少1只有明显花纹/颜色的
   - [ ] Screenshot/write down the best ones to re-mint on camera / 截图/记录最好的，以便在录制时重新mint
@@ -37,9 +64,12 @@
   - [ ] Magnet: Know when coins are in range / 磁铁：知道金币何时在范围内
   - [ ] Speed boost: Practice movement during activation / 加速：练习激活期间移动
   - [ ] Time freeze: Note visual effect (coins stop floating) / 冻结：注意视觉效果（金币停止浮动）
-- [ ] Practice 60-second run (aim for 300+ points) / 练习60秒跑动（目标300+分）
+- [ ] Practice 50-second run (aim for 300+ points) / 练习50秒跑动（目标300+分） ⏱️
+- [ ] Practice golden coin collection (glowing, 50 pts) / 练习金色金币收集（发光，50分）
 - [ ] Practice achieving 1 achievement mid-game / 练习游戏途中达成1个成就
+- [ ] Test intro orbit (360° camera showcase on load) / 测试开场轨道（加载时360°相机展示）
 - [ ] Test "daily champion" scenario if possible / 如果可能测试"每日冠军"场景
+- [ ] **Rare+ feature**: Test starting power-ups (Uncommon+ pigs spawn with active power-ups) / **稀有+功能**：测试初始道具（Uncommon+猪生成时带已激活道具）
 
 ---
 
@@ -47,9 +77,15 @@
 ## 阶段 2: 录制 — 逐个镜头
 
 ### Shot 1: Hook (0:00-0:15) — 15 seconds / 钩子画面
-- [ ] Record 3 different pigs running / 录制3只不同的猪奔跑
+- [ ] Record intro orbit (360° camera showcase on first load) / 录制开场轨道（首次加载时360°相机展示）
+- [ ] **🐷 Record 3 different pigs** (using Demo Mode preview) / **录制3只不同的猪**（使用Demo模式预览）
+  - [ ] Run `previewPig(1)` → Record pig running (3-5 sec) / 运行 `previewPig(1)` → 录制猪奔跑（3-5秒）
+  - [ ] Run `previewPig(2)` → Record pig running (3-5 sec) / 运行 `previewPig(2)` → 录制猪奔跑（3-5秒）
+  - [ ] Run `previewPig(7)` → Record Legendary pig (3-5 sec) / 运行 `previewPig(7)` → 录制Legendary猪（3-5秒）
+  - [ ] **In editing**: Cut between clips to show variety / **在剪辑中**：在片段间切换以展示多样性
 - [ ] Record power-up activation sequences / 录制道具激活序列
 - [ ] Record coin collection magnet effect / 录制金币收集磁铁效果
+- [ ] Record golden coin (glowing, larger, screen shake) / 录制金色金币（发光、更大、屏幕震动）
 - [ ] **Tip**: Capture at 60fps for smooth slow-motion options / **提示**：以60fps拍摄以便平滑慢动作
 
 ### Shot 2: Login (0:45-1:00) — 15 seconds / 登录
@@ -66,16 +102,18 @@
   - [ ] Pattern (zoom in on texture) / 花纹（放大纹理）
   - [ ] Rarity (highlight if Legendary) / 稀有度（如果是Legendary则高亮）
   - [ ] Speed bonus / 速度加成
+- [ ] **If Uncommon+**: Mention "This rarity starts with power-ups already active!" / **如果是Uncommon+**：提到"这个稀有度开始时道具已激活！"
 - [ ] **Script**: "This pig is verifiably random — generated on-chain" / **脚本**："这只猪是可验证的随机——链上生成"
 
 ### Shot 4: Core Gameplay (1:20-1:45) — 25 seconds / 核心玩法
 - [ ] Start "Play Round" / 开始"Play Round"
-- [ ] Show 60-second countdown / 显示60秒倒计时
+- [ ] Show 50-second countdown / 显示50秒倒计时 ⏱️
 - [ ] WASD movement demonstration / WASD移动演示
 - [ ] Coin collection (get ~10-15 coins) / 金币收集（获得约10-15个金币）
 - [ ] **Tip**: Keep movement smooth, don't overshoot / **提示**：保持移动平滑，不要过度
 
 ### Shot 5: Power-up Showcase (1:45-2:00) — 15 seconds / 道具展示
+- [ ] Collect golden coin first (50 pts, glowing, screen shake) / 先收集金色金币（50分，发光，屏幕震动）
 - [ ] Collect Magnet power-up / 收集磁铁道具
   - [ ] Show coins flying toward pig / 显示金币飞向猪
   - [ ] **Visual: Blue halo particles rotating around pig** / **视觉效果：蓝色光环粒子围绕猪旋转**（磁铁：蓝色光环围绕猪旋转）
@@ -148,7 +186,7 @@
 | Cartridge login fails | Use pre-recorded backup + voiceover / Cartridge登录失败 | 使用预录备份 + 旁白 |
 | No Legendary pig minted | Use Rare pig + explain "this is Uncommon..." / 没有mint到Legendary猪 | 使用Rare猪 + 解释"这是Uncommon..." |
 | Power-ups don't spawn | Restart round, or use pre-recorded footage / 道具不生成 | 重新开始回合，或使用预录素材 |
-| Leaderboard empty | Add dummy accounts first / 排行榜为空 | 先添加虚拟账号 |
+| Leaderboard empty | Use Demo Mode (⚡ faster) or add dummy accounts / 排行榜为空 | 使用Demo模式（⚡更快）或添加虚拟账号 |
 | Audio issues | Add music in post-production / 音频问题 | 在后期制作中添加音乐 |
 
 ---
@@ -209,6 +247,37 @@ Demo Mode 是一个录制辅助工具，它会用假数据替换真实的排行�
 | 4 | 看到控制台显示绿色成功消息 (See green console message) |
 | 5 | 点击游戏中的 "Leaderboard" 按钮 (Click "Leaderboard" button) |
 | 6 | 切换到 "Today" 标签 (Switch to "Today" tab) |
+
+---
+
+### 🐷 Step 3: Preview Different Pigs (Recording) / 步骤3：预览不同的猪（录制用）
+
+**Available Commands / 可用命令：**
+
+| Command | 命令 | Description / 描述 |
+|---------|------|-------------------|
+| `listPigPresets()` | 列出猪预设 | Show all 8 available pig styles |
+| `previewPig(1)` | 预览猪1 | Red Common (红色普通) |
+| `previewPig(2)` | 预览猪2 | Cyan Rare (青色稀有) |
+| `previewPig(3)` | 预览猪3 | **Purple Legendary** (紫色传说) ⭐ |
+| `previewPig(4)` | 预览猪4 | Green Uncommon (绿色罕见) |
+| `previewPig(5)` | 预览猪5 | Orange Rare (橙色稀有) |
+| `previewPig(6)` | 预览猪6 | Pink Common (粉色普通) |
+| `previewPig(7)` | 预览猪7 | **Blue Legendary** (蓝色传说) ⭐ |
+| `previewPig(8)` | 预览猪8 | Yellow Uncommon (黄色罕见) |
+
+**Usage for Recording / 录制用法：**
+```
+1. 登录并 mint 一只猪（任何样式都可以）
+2. Run: listPigPresets() → 查看所有选项
+3. Run: previewPig(7) → 切换到蓝色Legendary猪
+4. 录制 5-10 秒奔跑画面
+5. Run: previewPig(3) → 切换到紫色Legendary猪
+6. 录制 5-10 秒奔跑画面
+7. Run: previewPig(2) → 切换到青色Rare猪
+8. 录制 5-10 秒奔跑画面
+9. 后期剪辑时快速切换展示多样性
+```
 
 ---
 
