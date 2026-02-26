@@ -57,6 +57,9 @@ window.enableDemoMode = () => {
     { player: '0xdead...beef', score: 312 },
   ];
 
+  // Override getPlayerScore — for top right HUD display
+  window.getPlayerScore = async () => 380;
+
   // Override getPlayerDailyScore — player's best today
   window.getPlayerDailyScore = async () => 380;
 
