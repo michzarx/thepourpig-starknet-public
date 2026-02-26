@@ -5,15 +5,15 @@
 
 ---
 
+- [ ] Choose background music (30-second loop, upbeat)
+
+
 ## Phase 1: Pre-Recording Setup (30 min)
 ## 阶段 1: 录制前准备 (30分钟)
 
 ### Environment Setup / 环境设置
 - [ ] Clean browser state: Chrome Incognito mode / 清理浏览器：Chrome无痕模式
-- [ ] Close unnecessary tabs/apps (free up RAM) / 关闭不需要的标签页和应用
 - [ ] Set screen resolution: 1920x1080 / 设置屏幕分辨率
-- [ ] Test microphone (if recording voiceover) / 测试麦克风（如果录制旁白）
-- [ ] Choose background music (30-second loop, upbeat) / 选择背景音乐（30秒循环，欢快风格）
 
 ---
 
@@ -24,11 +24,6 @@
 - ✅ No manual gameplay for filler data / 不需要手动玩游戏填充数据
 - ✅ One command to populate leaderboards / 一条命令填充排行榜
 - ⏱️ Setup time: ~2 minutes / 准备时间：约2分钟
-
-**🔐 Option B - Real Data (Authentic) / 选项B - 真实数据（真实）**
-- ✅ All real blockchain data / 全部真实区块链数据
-- ✅ Can verify all transactions on StarkScan / 可在StarkScan上验证所有交易
-- ⏱️ Setup time: ~30 minutes / 准备时间：约30分钟
 
 ---
 
@@ -73,9 +68,9 @@
 ### Shot 1: Hook (0:00-0:15) — 15 seconds / 钩子画面
 - [ ] Record intro orbit (360° camera showcase on first load) / 录制开场轨道（首次加载时360°相机展示）
 - [ ] **🐷 Record 3 different pigs** (using Demo Mode preview) / **录制3只不同的猪**（使用Demo模式预览）
-  - [ ] Run `previewPig(1)` → Record pig running (3-5 sec) / 运行 `previewPig(1)` → 录制猪奔跑（3-5秒）
-  - [ ] Run `previewPig(2)` → Record pig running (3-5 sec) / 运行 `previewPig(2)` → 录制猪奔跑（3-5秒）
-  - [ ] Run `previewPig(7)` → Record Legendary pig (3-5 sec) / 运行 `previewPig(7)` → 录制Legendary猪（3-5秒）
+  - [ ] Run `previewPig(3)` → Purple Legendary/Diamond (3-5 sec) / 运行 → 紫色传说/菱形（3-5秒）
+  - [ ] Run `previewPig(7)` → Blue Legendary/Camo (3-5 sec) / 运行 → 蓝色传说/迷彩（3-5秒）
+  - [ ] Run `previewPig(9)` → Mint Rare/Plaid (3-5 sec) / 运行 → 薄荷绿稀有/格子纹（3-5秒）⭐ NEW
   - [ ] **In editing**: Cut between clips to show variety / **在剪辑中**：在片段间切换以展示多样性
 - [ ] Record power-up activation sequences / 录制道具激活序列
 - [ ] Record coin collection magnet effect / 录制金币收集磁铁效果
@@ -248,27 +243,31 @@ Demo Mode 是一个录制辅助工具，它会用假数据替换真实的排行�
 
 | Command | 命令 | Description / 描述 |
 |---------|------|-------------------|
-| `listPigPresets()` | 列出猪预设 | Show all 8 available pig styles |
-| `previewPig(1)` | 预览猪1 | Red Common (红色普通) |
-| `previewPig(2)` | 预览猪2 | Cyan Rare (青色稀有) |
-| `previewPig(3)` | 预览猪3 | **Purple Legendary** (紫色传说) ⭐ |
-| `previewPig(4)` | 预览猪4 | Green Uncommon (绿色罕见) |
-| `previewPig(5)` | 预览猪5 | Orange Rare (橙色稀有) |
-| `previewPig(6)` | 预览猪6 | Pink Common (粉色普通) |
-| `previewPig(7)` | 预览猪7 | **Blue Legendary** (蓝色传说) ⭐ |
-| `previewPig(8)` | 预览猪8 | Yellow Uncommon (黄色罕见) |
+| `listPigPresets()` | 列出猪预设 | Show all 10 available pig styles |
+| `previewPig(1)` | 预览猪1 | Red Common - Houndstooth (狗牙纹) |
+| `previewPig(2)` | 预览猪2 | Cyan Rare - Chevron (人字纹) |
+| `previewPig(3)` | 预览猪3 | Purple Legendary - Diamond (菱形) ⭐ |
+| `previewPig(4)` | 预览猪4 | Green Uncommon - Diamond (菱形) |
+| `previewPig(5)` | 预览猪5 | Orange Rare - Houndstooth (狗牙纹) |
+| `previewPig(6)` | 预览猪6 | Pink Common - Polka Dots (波点) |
+| `previewPig(7)` | 预览猪7 | Blue Legendary - Camo (迷彩) ⭐ |
+| `previewPig(8)` | 预览猪8 | Yellow Uncommon - Stripes (条纹) |
+| `previewPig(9)` | 预览猪9 | **Mint Rare - Plaid (格子纹)** ⭐ NEW |
+| `previewPig(10)` | 预览猪10 | **Teal Rare - Stars (星星纹)** ⭐ NEW |
 
 **Usage for Recording / 录制用法：**
 ```
 1. 登录并 mint 一只猪（任何样式都可以）
 2. Run: listPigPresets() → 查看所有选项
-3. Run: previewPig(7) → 切换到蓝色Legendary猪
+3. Run: previewPig(7) → 切换到蓝色Legendary猪（Camo迷彩）
 4. 录制 5-10 秒奔跑画面
-5. Run: previewPig(3) → 切换到紫色Legendary猪
+5. Run: previewPig(3) → 切换到紫色Legendary猪（Diamond菱形）
 6. 录制 5-10 秒奔跑画面
-7. Run: previewPig(2) → 切换到青色Rare猪
+7. Run: previewPig(9) → 切换到薄荷绿Rare猪（Plaid格子纹）⭐ NEW
 8. 录制 5-10 秒奔跑画面
-9. 后期剪辑时快速切换展示多样性
+9. Run: previewPig(10) → 切换到青色Rare猪（Stars星星纹）⭐ NEW
+10. 录制 5-10 秒奔跑画面
+11. 后期剪辑时快速切换展示多样性
 ```
 
 ---

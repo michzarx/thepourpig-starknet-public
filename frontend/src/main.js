@@ -559,6 +559,10 @@ function startIntroOrbit() {
     gameState.introAngle = 0;
 }
 
+// Expose for demo/recording
+window.startIntroOrbit = startIntroOrbit;
+window.exitIntroOrbit = exitIntroOrbit;
+
 function updateCamera(deltaTime) {
     if (!gameState.pig) return;
 
@@ -1550,10 +1554,10 @@ function generatePatternTexture(patternIdx, hue) {
   ctx.fillStyle = `rgb(${baseR},${baseG},${baseB})`;
   ctx.fillRect(0, 0, size, size);
 
-  // Pattern color from VRF hue
-  const pc = hslToRgb(hue, 0.7, 0.4);
+  // Pattern color from VRF hue — balanced contrast for visibility
+  const pc = hslToRgb(hue, 0.8, 0.32);  // Moderate saturation and darkness
   const patternColor = `rgb(${pc[0]},${pc[1]},${pc[2]})`;
-  const pc2 = hslToRgb((hue + 0.15) % 1, 0.6, 0.55);
+  const pc2 = hslToRgb((hue + 0.15) % 1, 0.7, 0.45);
   const accentColor = `rgb(${pc2[0]},${pc2[1]},${pc2[2]})`;
 
   switch (patternIdx) {

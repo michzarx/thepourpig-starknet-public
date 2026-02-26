@@ -19,15 +19,18 @@ const DEMO_ADDRESSES = [
 ];
 
 // Pre-configured pig presets for demo recording
+// All 8 patterns covered: Houndstooth(0), Stripes(1), Polka Dots(2), Plaid(3), Stars(4), Diamond(5), Chevron(6), Camo(7)
 const PIG_PRESETS = [
-  { name: 'Red Common',      colorHue: 0,   rarity: 0, speedBonus: 5,  sizeScale: 100 },
-  { name: 'Cyan Rare',       colorHue: 180, rarity: 2, speedBonus: 12, sizeScale: 100 },
-  { name: 'Purple Legendary',colorHue: 270, rarity: 3, speedBonus: 18, sizeScale: 100 },
-  { name: 'Green Uncommon',  colorHue: 120, rarity: 1, speedBonus: 8,  sizeScale: 100 },
-  { name: 'Orange Rare',     colorHue: 30,  rarity: 2, speedBonus: 14, sizeScale: 100 },
-  { name: 'Pink Common',     colorHue: 330, rarity: 0, speedBonus: 3,  sizeScale: 100 },
-  { name: 'Blue Legendary',  colorHue: 240, rarity: 3, speedBonus: 20, sizeScale: 100 },
-  { name: 'Yellow Uncommon', colorHue: 60,  rarity: 1, speedBonus: 10, sizeScale: 100 },
+  { name: 'Red Common',        colorHue: 0,   rarity: 0, speedBonus: 5,  sizeScale: 100 }, // Pattern 0: Houndstooth
+  { name: 'Cyan Rare',         colorHue: 180, rarity: 2, speedBonus: 12, sizeScale: 100 }, // Pattern 6: Chevron
+  { name: 'Purple Legendary',  colorHue: 270, rarity: 3, speedBonus: 18, sizeScale: 100 }, // Pattern 5: Diamond
+  { name: 'Green Uncommon',    colorHue: 120, rarity: 1, speedBonus: 8,  sizeScale: 100 }, // Pattern 5: Diamond
+  { name: 'Orange Rare',       colorHue: 30,  rarity: 2, speedBonus: 14, sizeScale: 100 }, // Pattern 0: Houndstooth
+  { name: 'Blue Common',       colorHue: 210, rarity: 0, speedBonus: 3,  sizeScale: 100 }, // Pattern 2: Polka Dots
+  { name: 'Blue Legendary',    colorHue: 240, rarity: 3, speedBonus: 20, sizeScale: 100 }, // Pattern 7: Camo
+  { name: 'Yellow Uncommon',   colorHue: 60,  rarity: 1, speedBonus: 10, sizeScale: 100 }, // Pattern 1: Stripes
+  { name: 'Mint Rare',         colorHue: 1,   rarity: 2, speedBonus: 13, sizeScale: 100 }, // Pattern 3: Plaid
+  { name: 'Teal Rare',         colorHue: 90,  rarity: 2, speedBonus: 15, sizeScale: 100 }, // Pattern 4: Stars
 ];
 
 /**
@@ -71,7 +74,7 @@ window.enableDemoMode = () => {
 
   console.log('%c✅ Demo mode enabled! Leaderboards will show fake data.', 'color: #4ecdc4; font-weight: bold');
   console.log('%cRun refreshLeaderboard() to update the display.', 'color: #666');
-  console.log('%c🐷 Run previewPig(1-8) to see different pig styles!', 'color: #ff9500; font-weight: bold');
+  console.log('%c🐷 Run previewPig(1-10) to see different pig styles!', 'color: #ff9500; font-weight: bold');
 };
 
 /**
