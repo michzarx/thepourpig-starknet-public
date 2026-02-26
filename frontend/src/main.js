@@ -1433,7 +1433,7 @@ async function showPigStats(tokenId) {
   const patternName = getPatternName(attrs.colorHue, attrs.rarity);
   document.getElementById('pig-color').textContent = `Pattern: ${patternName}`;
   document.getElementById('pig-speed').textContent = `Speed: +${attrs.speedBonus}`;
-  document.getElementById('pig-size').textContent = `Size: ${attrs.sizeScale}%`;
+  document.getElementById('pig-size').textContent = `Size: 100%`;
   document.getElementById('pig-rarity').textContent = `Rarity: ${rarityName(attrs.rarity)}`;
   pigStats.classList.remove('hidden');
 
@@ -1474,9 +1474,8 @@ function applyPigAttributes(attrs) {
     }
   });
 
-  // Apply size scale — affects gameplay (collision radius)
-  const scale = attrs.sizeScale / 100;
-  gameState.pig.scale.setScalar(scale);
+  // Fixed size — no gameplay advantage from mint RNG
+  gameState.pig.scale.setScalar(1.0);
 
   // Apply speed bonus — affects actual movement speed!
   const speedMultiplier = 1 + (attrs.speedBonus / 20) * 0.5; // 0-20 → 1.0x-1.5x
@@ -1982,10 +1981,14 @@ async function loadLeaderboard(mode) {
     if (mode === 'today') {
       const day = await getCurrentDay();
       console.log('Fetching daily leaderboard for day:', day);
-      entries = await getDailyLeaderboard(day);
+      // Use window reference to allow demo mode override
+      const dailyFn = window.getDailyLeaderboard || getDailyLeaderboard;
+      entries = await dailyFn(day);
     } else {
       console.log('Fetching all-time leaderboard');
-      entries = await getLeaderboard();
+      // Use window reference to allow demo mode override
+      const allTimeFn = window.getLeaderboard || getLeaderboard;
+      entries = await allTimeFn();
     }
     console.log('Leaderboard entries fetched:', entries.length, entries);
     leaderboardList.innerHTML = renderLbEntries(entries);
@@ -2059,11 +2062,14 @@ async function loadAchievements() {
     );
 
     // Get current streak for progress display
-    const streak = await getPlayerStreak(addr);
+    const streakFn = window.getPlayerStreak || getPlayerStreak;
+    const streak = await streakFn(addr);
     const score = await getPlayerScore(addr);
     const games = await getGamesPlayed(addr);
-    const day = await getCurrentDay();
-    const dailyLb = await getDailyLeaderboard(day);
+    const dayFn = window.getCurrentDay || getCurrentDay;
+    const day = await dayFn();
+    const dailyLbFn = window.getDailyLeaderboard || getDailyLeaderboard;
+    const dailyLb = await dailyLbFn(day);
     const isDailyChamp = dailyLb.length > 0 && dailyLb[0].player.toLowerCase() === addr.toLowerCase();
 
     achievementsList.innerHTML = ACHIEVEMENTS.map((ach, i) => {
@@ -2110,7 +2116,8 @@ async function updateDailyBanner() {
     const addr = getAddress();
     if (!addr) return;
 
-    const day = await getCurrentDay();
+    const dayFn = window.getCurrentDay || getCurrentDay;
+    const day = await dayFn();
     dailyDayEl.textContent = `🏆 Daily Challenge`;
 
     // Countdown to next day (UTC midnight)
@@ -2122,11 +2129,13 @@ async function updateDailyBanner() {
     dailyCountdownEl.textContent = `⏳ ${h}h ${m}m`;
 
     // Player's daily best
-    const dailyScore = await getPlayerDailyScore(addr, day);
+    const dailyScoreFn = window.getPlayerDailyScore || getPlayerDailyScore;
+    const dailyScore = await dailyScoreFn(addr, day);
     dailyBestEl.textContent = dailyScore > 0 ? `Your Best: ${dailyScore}` : '';
 
     // Streak
-    const streak = await getPlayerStreak(addr);
+    const streakFn = window.getPlayerStreak || getPlayerStreak;
+    const streak = await streakFn(addr);
     dailyStreakEl.textContent = streak > 0 ? `🔥 ${streak} day` : '';
 
     dailyBanner.classList.remove('hidden');
@@ -2245,7 +2254,7 @@ window.addEventListener('demo-preview-pig', (event) => {
 
   if (pigColorEl) pigColorEl.textContent = `Pattern: ${patternName}`;
   if (pigSpeedEl) pigSpeedEl.textContent = `Speed: +${preset.speedBonus}`;
-  if (pigSizeEl) pigSizeEl.textContent = `Size: ${preset.sizeScale}%`;
+  if (pigSizeEl) pigSizeEl.textContent = `Size: 100%`;
   if (pigRarityEl) pigRarityEl.textContent = `Rarity: ${rarityName(preset.rarity)}`;
 
   console.log('%c✅ Pig preview applied!', 'color: #4ecdc4; font-weight: bold');

@@ -21,13 +21,13 @@ const DEMO_ADDRESSES = [
 // Pre-configured pig presets for demo recording
 const PIG_PRESETS = [
   { name: 'Red Common',      colorHue: 0,   rarity: 0, speedBonus: 5,  sizeScale: 100 },
-  { name: 'Cyan Rare',       colorHue: 180, rarity: 2, speedBonus: 12, sizeScale: 105 },
-  { name: 'Purple Legendary',colorHue: 270, rarity: 3, speedBonus: 18, sizeScale: 90  },
-  { name: 'Green Uncommon',  colorHue: 120, rarity: 1, speedBonus: 8,  sizeScale: 110 },
-  { name: 'Orange Rare',     colorHue: 30,  rarity: 2, speedBonus: 14, sizeScale: 95  },
+  { name: 'Cyan Rare',       colorHue: 180, rarity: 2, speedBonus: 12, sizeScale: 100 },
+  { name: 'Purple Legendary',colorHue: 270, rarity: 3, speedBonus: 18, sizeScale: 100 },
+  { name: 'Green Uncommon',  colorHue: 120, rarity: 1, speedBonus: 8,  sizeScale: 100 },
+  { name: 'Orange Rare',     colorHue: 30,  rarity: 2, speedBonus: 14, sizeScale: 100 },
   { name: 'Pink Common',     colorHue: 330, rarity: 0, speedBonus: 3,  sizeScale: 100 },
-  { name: 'Blue Legendary',  colorHue: 240, rarity: 3, speedBonus: 20, sizeScale: 85  },
-  { name: 'Yellow Uncommon', colorHue: 60,  rarity: 1, speedBonus: 10, sizeScale: 115 },
+  { name: 'Blue Legendary',  colorHue: 240, rarity: 3, speedBonus: 20, sizeScale: 100 },
+  { name: 'Yellow Uncommon', colorHue: 60,  rarity: 1, speedBonus: 10, sizeScale: 100 },
 ];
 
 /**
