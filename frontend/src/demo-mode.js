@@ -51,8 +51,8 @@ window.enableDemoMode = () => {
     { player: '0xfefe...fefe', score: 298 },
   ];
 
-  // Override getDailyLeaderboard — more competitive
-  window.getDailyLeaderboard = async () => [
+  // Override getDailyLeaderboard — more competitive (accepts day param but ignores it)
+  window.getDailyLeaderboard = async (_day) => [
     { player: DEMO_ADDRESSES[0], score: 450 },
     { player: '0xabcd...1234', score: 423 },  // Close to #1
     { player: DEMO_ADDRESSES[1], score: 398 },
@@ -61,13 +61,13 @@ window.enableDemoMode = () => {
   ];
 
   // Override getPlayerScore — for top right HUD display
-  window.getPlayerScore = async () => 380;
+  window.getPlayerScore = async (_playerAddress) => 380;
 
-  // Override getPlayerDailyScore — player's best today
-  window.getPlayerDailyScore = async () => 380;
+  // Override getPlayerDailyScore — player's best today (accepts 2 params but ignores them)
+  window.getPlayerDailyScore = async (_playerAddress, _day) => 380;
 
   // Override getPlayerStreak — show active streak
-  window.getPlayerStreak = async () => 3;
+  window.getPlayerStreak = async (_playerAddress) => 3;
 
   // Override getCurrentDay
   window.getCurrentDay = async () => 142;
