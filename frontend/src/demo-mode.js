@@ -72,6 +72,13 @@ window.enableDemoMode = () => {
   // Override getCurrentDay
   window.getCurrentDay = async () => 142;
 
+  // Refresh displays immediately
+  if (window.updateDailyBanner) window.updateDailyBanner();
+
+  // Update top bar score display
+  const playerScoreEl = document.getElementById('player-score');
+  if (playerScoreEl) playerScoreEl.textContent = 'Best: 380';
+
   console.log('%c✅ Demo mode enabled! Leaderboards will show fake data.', 'color: #4ecdc4; font-weight: bold');
   console.log('%cRun refreshLeaderboard() to update the display.', 'color: #666');
   console.log('%c🐷 Run previewPig(1-10) to see different pig styles!', 'color: #ff9500; font-weight: bold');

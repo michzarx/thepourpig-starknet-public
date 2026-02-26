@@ -2259,6 +2259,7 @@ window.getDailyLeaderboard = getDailyLeaderboard;
 window.getPlayerDailyScore = getPlayerDailyScore;
 window.getPlayerStreak = getPlayerStreak;
 window.getCurrentDay = getCurrentDay;
+window.updateDailyBanner = updateDailyBanner;  // For demo mode to refresh banner immediately
 
 // DEMO MODE: Listen for pig preview events from demo-mode.js
 window.addEventListener('demo-preview-pig', (event) => {
