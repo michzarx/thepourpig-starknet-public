@@ -52,12 +52,6 @@
   - [ ] If existing: Note existing pigs/achievements / 如果是现有的：记录现有的猪和成就
 - [ ] **Skip Option B → Go to Game Mechanics Practice** / **跳过选项B → 进入游戏机制练习**
 
-### Test Mint for Visual Variety / 测试Mint以获得视觉多样性
-- [ ] **Skip if using Demo Mode** (use `previewPig()` instead) / **如果使用Demo模式则跳过**（改用 `previewPig()`）
-- [ ] OR Mint 5-10 pigs to find good visual examples / 或 Mint 5-10只猪找到好的视觉示例
-  - [ ] At least 1 Legendary (for rarity showcase) / 至少1只Legendary（用于展示稀有度）
-  - [ ] At least 1 with distinct pattern/color / 至少1只有明显花纹/颜色的
-  - [ ] Screenshot/write down the best ones to re-mint on camera / 截图/记录最好的，以便在录制时重新mint
 
 ### Game Mechanics Practice / 游戏机制练习
 - [ ] Practice power-up timing / 练习道具时机
@@ -146,8 +140,6 @@
 - [ ] **Script**: "Everything is verifiable on-chain" / **脚本**："一切都可以在链上验证"
 
 ### Shot 9: CTA (2:50-3:00) — 10 seconds / 行动号召
-- [ ] Display URL: thepourpig.netlify.app / 显示URL
-- [ ] Show QR code (optional) / 显示二维码（可选）
 - [ ] End card: "Built for Starknet Re{define}" / 结束卡片："为Starknet Re{define}而构建"
 
 ---

@@ -20,16 +20,32 @@
     - `listPigPresets()` - 列出所有 8 个预设猪
     - `previewPig(1-8)` - 即时切换猪外观 (Common → Legendary)
     - 适用于录制时快速展示多样性,无需等待 VRF mint
+  - **分数同步 / Score Sync**: Demo mode 现在也覆盖 `getPlayerScore` 确保所有位置显示一致
 
   - **如何禁用 / How to Disable**:
     - 录制完成后,在 `index.html` 中重新注释 demo-mode 脚本
     - Push 到 GitHub,Netlify 自动部署后禁用
+
+- **音效导出工具 / Sound Effects Exporter**
+  - 添加 `frontend/export-sounds.html` 用于导出游戏音效
+  - 所有 7 个音效均可预览和导出为 WAV 格式
+  - 用于后期视频制作: coin, golden-coin, powerup-magnet, powerup-speed, powerup-freeze, round-start, round-end
+
+- **公平性改进 / Fairness Improvements**
+  - **移除体型差异 / Remove Size Variation**: 所有猪现在固定 100% 体型
+  - 原因: 防止 mint RNG 影响游戏平衡和排行榜公平性
+  - 稀有度仍然影响颜色和速度加成
+
+- **视觉增强 / Visual Enhancements**
+  - **Mint 后 360° 展示 / Post-Mint 360° Showcase**: Mint 完成后自动开始相机轨道展示
+  - **隐藏体型属性 / Hide Size Attribute**: UI 不再显示 "Size: 100%" (所有猪相同)
 
 - **Demo 录制清单 / Demo Recording Checklist**
   - 添加 `docs/demo-recording-checklist.md` 完整录制指南
   - Shot-by-shot 镜头分解 (3 分钟 demo)
   - Demo Mode vs 真实数据 两种方案对比
   - 修复回合时长: 60s → 50s (与代码一致)
+  - 从 CTA 镜头移除 URL 要求 (hackathon demo 不需要)
 
 ### 📝 文档 / Documentation
 
