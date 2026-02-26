@@ -1372,7 +1372,23 @@ walletBtn.addEventListener('click', async () => {
 
   try {
     walletBtn.textContent = 'Connecting...';
-    const acct = await connect();
+    // Retry connect - Cartridge Controller may not be ready immediately
+    let acct = null;
+    let attempts = 0;
+    while (!acct && attempts < 10) {
+      try {
+        acct = await connect();
+      } catch (e) {
+        // "Not ready to connect" - controller still initializing
+        if (attempts < 9) {
+          console.log(`Controller not ready, retrying (${attempts + 1}/10)...`);
+          await new Promise(r => setTimeout(r, 500));
+        } else {
+          throw e;
+        }
+      }
+      attempts++;
+    }
     console.log('Connected account:', acct);
     const addr = getAddress();
     console.log('Address:', addr);
@@ -1422,8 +1438,15 @@ mintBtn.addEventListener('click', async () => {
     const tokenId = await getPlayerPig(addr);
     hasPig = true;
     mintPanel.classList.add('hidden');
+
+    // Fetch score (should be 0 for newly minted pig)
+    bestScore = await getPlayerScore(addr);
+    playerScoreEl.textContent = `Best: ${bestScore}`;
+
     await showPigStats(tokenId);
     gameHud.classList.remove('hidden');
+    achievementsBtn.classList.remove('hidden');
+    leaderboardBtn.classList.remove('hidden');
     submitScoreBtn.textContent = 'Start Round';
     submitScoreBtn.classList.remove('hidden');
     startDailyBannerUpdates();
