@@ -46,7 +46,7 @@ const CONFIG = {
     walkSpeed: 3,
     runSpeed: 6,
     backwardSpeed: 2,
-    rotationSpeed: 4,
+    rotationSpeed: 2,
 
     // Camera settings
     cameraDistance: 4,
@@ -1870,6 +1870,9 @@ async function endRound() {
 async function checkAndClaimAchievements(score) {
   const addr = getAddress();
   if (!addr) return;
+
+  let newUnlocked = 0; // Track newly unlocked achievements
+
   try {
     // Score-based achievements
     const thresholds = [
@@ -1888,6 +1891,7 @@ async function checkAndClaimAchievements(score) {
           await claimAchievement(id);
           console.log(`Achievement unlocked: ${name}!`);
           showAchievementToast(name);
+          newUnlocked++;
         } catch (e) {
           console.warn(`Failed to claim '${name}':`, e);
         }
@@ -1903,6 +1907,7 @@ async function checkAndClaimAchievements(score) {
         if (lb.length > 0 && lb[0].player.toLowerCase() === addr.toLowerCase()) {
           await claimAchievement(4);
           showAchievementToast('Daily Champion');
+          newUnlocked++;
         }
       }
     } catch {}
@@ -1915,10 +1920,17 @@ async function checkAndClaimAchievements(score) {
         if (streak >= 3) {
           await claimAchievement(5);
           showAchievementToast('Streak Master');
+          newUnlocked++;
         }
       }
     } catch {}
   } catch {}
+
+  // Auto-open achievements panel if any new achievements were unlocked
+  if (newUnlocked > 0) {
+    achievementsPanel.classList.remove('hidden');
+    await loadAchievements();
+  }
 
   // Refresh daily banner after round
   updateDailyBanner();
