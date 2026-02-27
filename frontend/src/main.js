@@ -1150,6 +1150,8 @@ function updatePowerUps(dt) {
     // Magnet effect: attract nearby coins
     if (activePowerUps.magnet && activePowerUps.magnet.timeLeft > 0 && gameState.pig) {
         const pigPos = gameState.pig.position;
+
+        // Attract coins
         for (const c of coins) {
             if (c.collected) continue;
             const dx = pigPos.x - c.mesh.position.x;
@@ -1161,35 +1163,66 @@ function updatePowerUps(dt) {
                 c.mesh.position.z += (dz / dist) * speed;
             }
         }
-        // Spawn magnet ring particles
-        if (Math.random() < 0.3) {
-            spawnPowerUpParticle(pigPos, 0x4488FF);
+
+        // Spawn magnet ring particles (rotating blue halo around pig)
+        if (!updatePowerUps.magnetAngle) updatePowerUps.magnetAngle = 0;
+        updatePowerUps.magnetAngle += dt * 3;
+        const ringRadius = 1.2;
+        for (let i = 0; i < 3; i++) {
+            const angle = updatePowerUps.magnetAngle + (i / 3) * Math.PI * 2;
+            const particlePos = new THREE.Vector3(
+                pigPos.x + Math.cos(angle) * ringRadius,
+                pigPos.y + 0.5 + Math.sin(angle * 2) * 0.2,
+                pigPos.z + Math.sin(angle) * ringRadius
+            );
+            spawnPowerUpParticle(particlePos, 0x4488FF, 0.15);
         }
     }
 
     // Freeze effect: pause timer
     const isFrozen = activePowerUps.freeze && activePowerUps.freeze.timeLeft > 0;
 
-    // Speed effect particles
+    // Speed effect particles (orange trail behind pig)
     if (activePowerUps.speed && activePowerUps.speed.timeLeft > 0 && gameState.pig) {
-        if (Math.random() < 0.4) {
-            const pos = gameState.pig.position.clone();
-            pos.y += 0.5;
-            spawnPowerUpParticle(pos, 0xFFDD00);
+        if (Math.random() < 0.6) {
+            const pigPos = gameState.pig.position;
+            // Get direction behind pig (opposite to facing direction)
+            const behindDir = new THREE.Vector3(0, 0, 1);
+            behindDir.applyQuaternion(gameState.pig.quaternion);
+
+            // Spawn particles trailing behind
+            const trailCount = 2;
+            for (let i = 0; i < trailCount; i++) {
+                const offset = (i + 1) * 0.4;
+                const spread = (Math.random() - 0.5) * 0.5;
+                const pos = new THREE.Vector3(
+                    pigPos.x + behindDir.x * offset + spread,
+                    pigPos.y + 0.3 + Math.random() * 0.3,
+                    pigPos.z + behindDir.z * offset + spread
+                );
+                // Orange color for speed
+                spawnPowerUpParticle(pos, 0xFF8800, 0.12);
+            }
         }
     }
 
-    // Freeze effect particles
-    if (isFrozen && Math.random() < 0.2) {
-        const edge = new THREE.Vector3(
-            (Math.random() - 0.5) * 2,
-            Math.random() * 2,
-            0,
-        );
-        if (gameState.pig) {
-            edge.add(gameState.pig.position);
+    // Freeze effect particles (white frost at screen edges)
+    if (isFrozen && Math.random() < 0.3) {
+        const camPos = camera.position;
+        const edgeCount = 4;
+        const edgeDist = 8; // Distance from camera
+
+        // Spawn particles at random screen edge positions
+        for (let i = 0; i < edgeCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const edgePos = new THREE.Vector3(
+                camPos.x + Math.cos(angle) * edgeDist,
+                camPos.y + (Math.random() - 0.5) * 4,
+                camPos.z + Math.sin(angle) * edgeDist
+            );
+            // White frost particles
+            spawnPowerUpParticle(edgePos, 0xFFFFFF, 0.18);
         }
-        spawnPowerUpParticle(edge, 0x44FFAA);
     }
 
     // Tick down active power-ups
@@ -1223,14 +1256,15 @@ function updatePowerUps(dt) {
         }
         p.mesh.position.addScaledVector(p.velocity, dt);
         p.mesh.material.opacity = p.life;
-        p.mesh.scale.setScalar(p.life * 0.5);
+        const baseSize = p.baseSize || 0.2;
+        p.mesh.scale.setScalar(p.life * (1 + baseSize * 2));
     }
 
     return isFrozen;
 }
 
-function spawnPowerUpParticle(pos, color) {
-    const geo = new THREE.SphereGeometry(0.05, 4, 4);
+function spawnPowerUpParticle(pos, color, size = 0.2) {
+    const geo = new THREE.SphereGeometry(size, 8, 8);
     const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.8 });
     const mesh = new THREE.Mesh(geo, mat);
     mesh.position.copy(pos);
@@ -1240,7 +1274,7 @@ function spawnPowerUpParticle(pos, color) {
         Math.random() * 1.5 + 0.5,
         (Math.random() - 0.5) * 2,
     );
-    powerUpParticles.push({ mesh, velocity: vel, life: 1.0 });
+    powerUpParticles.push({ mesh, velocity: vel, life: 1.0, baseSize: size });
 }
 
 function playPowerUpSound(typeId) {
