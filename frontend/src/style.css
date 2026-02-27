@@ -116,7 +116,18 @@ canvas {
 
 /* Top bar */
 #top-bar {
-    display: none;
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Hide player info (address + score) for cleaner demo, keep wallet button */
+#player-info {
+    display: none !important;
 }
 
 #wallet-btn {
