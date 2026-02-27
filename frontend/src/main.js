@@ -1372,23 +1372,7 @@ walletBtn.addEventListener('click', async () => {
 
   try {
     walletBtn.textContent = 'Connecting...';
-    // Retry connect - Cartridge Controller may not be ready immediately
-    let acct = null;
-    let attempts = 0;
-    while (!acct && attempts < 10) {
-      try {
-        acct = await connect();
-      } catch (e) {
-        // "Not ready to connect" - controller still initializing
-        if (attempts < 9) {
-          console.log(`Controller not ready, retrying (${attempts + 1}/10)...`);
-          await new Promise(r => setTimeout(r, 500));
-        } else {
-          throw e;
-        }
-      }
-      attempts++;
-    }
+    const acct = await connect();
     console.log('Connected account:', acct);
     const addr = getAddress();
     console.log('Address:', addr);

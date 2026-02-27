@@ -12,9 +12,8 @@
     "vite": "^7.3.1"
   },
   "dependencies": {
-    "@cartridge/account-wasm": "^0.1.1",
     "@cartridge/controller": "^0.13.4",
-    "starknet": "^9.2.1",
+    "starknet": "^8.9.2",
     "three": "^0.182.0"
   },
   "description": "",
