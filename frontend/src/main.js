@@ -2142,7 +2142,7 @@ async function loadAchievements() {
         <div class="achievement-item ${unlocked ? 'unlocked' : 'locked'}">
           <div class="achievement-icon">${ach.icon}</div>
           <div class="achievement-info">
-            <div class="achievement-name">${ach.name}</div>
+            <div class="achievement-name">${ach.name} <span style="font-size:0.7rem;opacity:0.5">#${ach.id}</span></div>
             <div class="achievement-desc">${ach.desc}</div>
             <div class="achievement-status">${statusText}</div>
           </div>
