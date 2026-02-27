@@ -1434,7 +1434,7 @@ mintBtn.addEventListener('click', async () => {
     submitScoreBtn.textContent = 'Start Round';
     submitScoreBtn.classList.remove('hidden');
     startDailyBannerUpdates();
-    startIntroOrbit();
+    exitIntroOrbit();
   } catch (e) {
     console.error('Mint failed:', e);
     mintStatus.textContent = `Mint failed: ${e.message || e}`;

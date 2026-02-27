@@ -12,7 +12,7 @@
     "vite": "^7.3.1"
   },
   "dependencies": {
-    "@cartridge/controller": "^0.13.4",
+    "@cartridge/controller": "^0.13.9",
     "starknet": "^8.9.2",
     "three": "^0.182.0"
   },
