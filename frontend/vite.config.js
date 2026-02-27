@@ -8,6 +8,6 @@ export default defineConfig({
     target: 'esnext',
   },
   optimizeDeps: {
-    exclude: ['@cartridge/account-wasm'],
+    exclude: ['@cartridge/controller'],
   },
 });
