@@ -23,11 +23,36 @@ const controller = new Controller({
       },
     },
   },
+  theme: {
+    colors: {
+      primary: "#f7931a",
+    },
+  },
 });
 
 let account = null;
+let controllerReady = false;
+
+// Initialize controller on load
+controller.ready().then(() => {
+  controllerReady = true;
+  console.log('%c✅ Cartridge Controller ready', 'color: #4ecdc4; font-weight: bold');
+}).catch((e) => {
+  console.warn('Controller ready check failed:', e);
+});
 
 export async function connect() {
+  // Wait for controller to be ready
+  if (!controllerReady) {
+    try {
+      await controller.ready();
+      controllerReady = true;
+    } catch (e) {
+      console.warn('Controller not ready:', e);
+      throw new Error('Controller not ready');
+    }
+  }
+  
   try {
     const res = await controller.connect();
     if (res) {

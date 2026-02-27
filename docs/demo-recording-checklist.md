@@ -29,15 +29,13 @@
 
 ### Option A: Demo Mode Setup (Quick) / 选项A：Demo模式设置（快速）
 - [ ] **Enable Demo Mode in code** / **在代码中启用Demo模式** (find the details below)
-  - [ ] Open `frontend/index.html` / 打开 `frontend/index.html`
-  - [ ] Uncomment demo-mode script line (remove `<!--` and `-->`) / 取消注释demo-mode脚本行
+  - [ ] Open `frontend/index.html` 
+  - [ ] Uncomment demo-mode script line (remove `<!--` and `-->`)
   - [ ] Redeploy or test locally / 重新部署或本地测试
 - [ ] **Test activation** / **测试激活**
-  - [ ] Open site in browser / 在浏览器中打开网站
-  - [ ] Press F12 → Console / 按F12 → 控制台
-  - [ ] Run `enableDemoMode()` / 运行 `enableDemoMode()`
+  - [ ] Run `enableDemoMode()` in console (F12
   - [ ] Click Leaderboard → Verify fake data shows / 点击排行榜 → 验证假数据显示
-- [ ] **🐷 Test Pig Preview (for recording different pigs)** / **测试猪预览（用于录制不同的猪）**
+- [ ] **🐷 Test Pig Preview (for recording different pigs)**
   - [ ] Run `listPigPresets()` to see all options / 运行 `listPigPresets()` 查看所有选项
   - [ ] Run `previewPig(1)`, `previewPig(2)`, etc. to switch styles / 运行 `previewPig(1)`, `previewPig(2)` 等切换样式
   - [ ] Choose 3 best-looking pigs for recording / 选择3只最好看的猪用于录制
@@ -71,18 +69,18 @@
   - [ ] Run `previewPig(3)` → Purple Legendary/Diamond (3-5 sec) / 运行 → 紫色传说/菱形（3-5秒）
   - [ ] Run `previewPig(7)` → Blue Legendary/Camo (3-5 sec) / 运行 → 蓝色传说/迷彩（3-5秒）
   - [ ] Run `previewPig(9)` → Mint Rare/Plaid (3-5 sec) / 运行 → 薄荷绿稀有/格子纹（3-5秒）⭐ NEW
-  - [ ] **In editing**: Cut between clips to show variety / **在剪辑中**：在片段间切换以展示多样性
+  - [ ] **In editing**: Cut between clips to show variety
 - [ ] Record power-up activation sequences / 录制道具激活序列
 - [ ] Record coin collection magnet effect / 录制金币收集磁铁效果
 - [ ] Record golden coin (glowing, larger, screen shake) / 录制金色金币（发光、更大、屏幕震动）
 - [ ] **Tip**: Capture at 60fps for smooth slow-motion options / **提示**：以60fps拍摄以便平滑慢动作
 
 ### Shot 2: Login (0:45-1:00) — 15 seconds / 登录
-- [ ] Start fresh browser/incognito / 启动全新浏览器/无痕模式
-- [ ] Click "Connect with Cartridge" / 点击"Connect with Cartridge"
-- [ ] Show no wallet extension installed / 显示没有安装钱包扩展
+- [ ] Start fresh browser/incognito
+- [ ] Click "Connect with Cartridge"
+- [ ] Show no wallet extension installed
 - [ ] Complete login flow / 完成登录流程
-- [ ] **Tip**: Keep cursor visible to show no magic / **提示**：保持光标可见以显示没有魔术
+- [ ] **Tip**: Keep cursor visible to show no magicz
 
 ### Shot 3: Mint VRF Pig (1:00-1:20) — 20 seconds / Mint VRF猪
 - [ ] Click "Mint Pig" button / 点击"Mint Pig"按钮
