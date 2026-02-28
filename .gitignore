@@ -26,3 +26,15 @@ npm-debug.log*
 # Local Netlify folder
 .netlify
 .claude/
+
+# Internal planning & notes (not for public repo)
+memory.md
+hackathon-opportunities.md
+project-plan-v1.md
+project-plan-v2.md
+CHANGELOG.md
+docs/demo-recording-checklist.md
+docs/[archive] design-reference/
+
+# Source assets (originals, not needed for build)
+assets/

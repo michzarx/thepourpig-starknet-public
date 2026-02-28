@@ -6,7 +6,7 @@ A 3D browser game where players mint unique pig NFTs with on-chain random attrib
 
 🎮 **[Play Now → thepourpig.netlify.app](https://thepourpig.netlify.app)**
 
-📜 **[Contract on Starkscan](https://sepolia.starkscan.co/contract/0x077980c0fc1ef925fa1d962c6457ae86ba18e8a151570ec9af6e9371124530bc)**
+📜 **[Contract on Voyager](https://sepolia.voyager.online/contract/0x07e0635703126ca36f634ed88bbb591679c8a982fced5f52744e0b08f1e5d141)**
 
 ---
 
@@ -42,10 +42,12 @@ Most blockchain games suffer from terrible UX: install a wallet extension, backu
 
 | ID | Name | Condition |
 |----|------|-----------|
-| 0 | Coin Collector | Score ≥ 100 |
-| 1 | Coin Master | Score ≥ 500 |
-| 2 | Veteran | 10+ games played |
-| 3 | Legend | Score ≥ 1000 |
+| 0 | 🪙 Coin Collector | Score ≥ 100 |
+| 1 | 💰 Coin Master | Score ≥ 500 |
+| 2 | 🎮 Veteran | 10+ games played |
+| 3 | 👑 Legend | Score ≥ 1000 |
+| 4 | 🏆 Daily Champion | #1 on daily leaderboard |
+| 5 | 🔥 Streak Master | 3+ consecutive days |
 
 ---
 
@@ -96,11 +98,10 @@ Most blockchain games suffer from terrible UX: install a wallet extension, backu
 | Field | Value |
 |-------|-------|
 | **Network** | Starknet Sepolia |
-| **Contract** | `0x077980c0fc1ef925fa1d962c6457ae86ba18e8a151570ec9af6e9371124530bc` |
-| **Class Hash** | `0x6d6473dbfbaf0d40c43397c2b16ccffe3f7db5e82851108b92d076b26006031` |
+| **Contract** | `0x07e0635703126ca36f634ed88bbb591679c8a982fced5f52744e0b08f1e5d141` |
 | **VRF Provider** | `0x051fea4450da9d6aee758bdeba88b2f665bcbf549d2c61421aa724e9ac0ced8f` |
 | **RPC** | `https://api.cartridge.gg/x/starknet/sepolia` |
-| **Explorer** | [Starkscan](https://sepolia.starkscan.co/contract/0x077980c0fc1ef925fa1d962c6457ae86ba18e8a151570ec9af6e9371124530bc) |
+| **Explorer** | [Voyager](https://sepolia.voyager.online/contract/0x07e0635703126ca36f634ed88bbb591679c8a982fced5f52744e0b08f1e5d141) |
 
 ---
 
@@ -108,7 +109,7 @@ Most blockchain games suffer from terrible UX: install a wallet extension, backu
 
 ```bash
 # Clone
-git clone https://github.com/YOUR_USERNAME/thepourpig-starknet.git
+git clone https://github.com/michzarx/thepourpig-starknet.git
 cd thepourpig-starknet/frontend
 
 # Install
@@ -116,7 +117,7 @@ npm install
 
 # Dev server
 npm run dev
-# → http://localhost:3000
+# → http://localhost:8080
 ```
 
 ### Build Cairo Contract (optional)
@@ -146,7 +147,9 @@ thepourpig-starknet/
 │   ├── vite.config.js
 │   ├── src/
 │   │   ├── main.js               # Game engine + rendering + collectibles + patterns + VFX
-│   │   ├── contract.js           # Cartridge Controller + contract interactions
+│   │   ├── contract.js           # Starknet contract interactions (RPC calls)
+│   │   ├── controller.js         # Cartridge Controller (wallet + session keys)
+│   │   ├── config.js             # Contract addresses + RPC config
 │   │   └── style.css             # UI styles
 │   └── public/
 │       ├── poorPIG.glb           # Pig 3D model
