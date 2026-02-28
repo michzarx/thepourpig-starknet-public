@@ -12,7 +12,6 @@ async function fetchAbi() {
   if (cachedAbi) return cachedAbi;
   const cls = await provider.getClassAt(CONTRACT_ADDRESS);
   cachedAbi = cls.abi;
-  console.log('Fetched ABI from chain');
   return cachedAbi;
 }
 
@@ -49,7 +48,6 @@ export async function mintPig() {
   ];
 
   const tx = await account.execute(calls);
-  console.log("Mint tx:", tx.transaction_hash);
 
   // Wait for confirmation
   await provider.waitForTransaction(tx.transaction_hash);
@@ -123,13 +121,11 @@ export async function getPlayerPig(playerAddress) {
   const contract = await getReadContract();
   try {
     const result = await contract.call("get_player_pig", [playerAddress]);
-    console.log('getPlayerPig raw result:', result);
     // u256 returns as bigint or object with low/high
     if (typeof result === 'bigint') return Number(result);
     if (result && result.low !== undefined) return Number(result.low);
     return Number(result);
   } catch (e) {
-    console.error('getPlayerPig error:', e);
     return 0;
   }
 }
@@ -141,7 +137,6 @@ export async function getPigAttributes(tokenId) {
     const result = await contract.call("get_pig_attributes", [
       cairo.uint256(tokenId),
     ]);
-    console.log('getPigAttributes raw result:', result);
     // With full ABI, result is a PigAttributes struct with named fields
     return {
       colorHue: Number(result.color_hue ?? result[0]),
@@ -150,7 +145,6 @@ export async function getPigAttributes(tokenId) {
       rarity: Number(result.rarity ?? result[3]),
     };
   } catch (e) {
-    console.error('getPigAttributes error:', e);
     return null;
   }
 }
@@ -174,7 +168,6 @@ export async function getLeaderboard() {
     const entries = [];
     for (let i = 0; i < size; i++) {
       const entry = await contract.call("get_leaderboard_entry", [i]);
-      console.log('leaderboard entry raw:', entry);
       // With full ABI, entry is a LeaderboardEntry struct
       const player = entry.player ?? entry[0];
       const score = entry.score ?? entry[1];
@@ -185,7 +178,6 @@ export async function getLeaderboard() {
     }
     return entries;
   } catch (e) {
-    console.error('getLeaderboard error:', e);
     return [];
   }
 }
@@ -240,7 +232,6 @@ export async function getDailyLeaderboard(day) {
     }
     return entries;
   } catch (e) {
-    console.error('getDailyLeaderboard error:', e);
     return [];
   }
 }

@@ -103,7 +103,6 @@ const gameState = {
 // ============================================================================
 const container = document.getElementById('game-container');
 const loadingScreen = document.getElementById('loading-screen');
-const debugInfo = document.getElementById('debug-info');
 
 // Create scene
 const scene = new THREE.Scene();
@@ -351,13 +350,10 @@ function loadPigModel() {
     return new Promise((resolve, reject) => {
         const loader = new GLTFLoader();
 
-        console.log('Loading pig model...');
 
         loader.load(
             '/poorPIG.glb',
             (gltf) => {
-                console.log('Pig model loaded successfully!');
-                console.log('Available animations:', gltf.animations.map(a => a.name));
 
                 const pig = gltf.scene;
                 pig.position.set(0, 0, 0);
@@ -378,7 +374,6 @@ function loadPigModel() {
                 gltf.animations.forEach((clip) => {
                     const name = clip.name.toLowerCase();
                     gameState.animations[name] = gameState.mixer.clipAction(clip);
-                    console.log(`Registered animation: ${name}`);
                 });
 
                 if (gameState.animations['idle']) {
@@ -396,7 +391,6 @@ function loadPigModel() {
             },
             (progress) => {
                 const percent = (progress.loaded / progress.total * 100).toFixed(0);
-                console.log(`Loading: ${percent}%`);
             },
             (error) => {
                 console.error('Error loading pig model:', error);
@@ -416,7 +410,6 @@ function switchAnimation(newAnimationName) {
     const newAction = gameState.animations[newAnimationName];
 
     if (!newAction) {
-        console.warn(`Animation '${newAnimationName}' not found`);
         return;
     }
 
@@ -559,9 +552,6 @@ function startIntroOrbit() {
     gameState.introAngle = 0;
 }
 
-// Expose for demo/recording
-window.startIntroOrbit = startIntroOrbit;
-window.exitIntroOrbit = exitIntroOrbit;
 
 function updateCamera(deltaTime) {
     if (!gameState.pig) return;
@@ -847,10 +837,8 @@ function loadCoinModel() {
                     child.receiveShadow = true;
                 }
             });
-            console.log('Coin model loaded successfully!');
             resolve();
         }, undefined, (err) => {
-            console.warn('Coin GLB failed to load, using fallback:', err);
             coinModelTemplate = null;
             resolve();
         });
@@ -1379,8 +1367,6 @@ const achievementsPanel = document.getElementById('achievements-panel');
 const achievementsList = document.getElementById('achievements-list');
 const closeAchievements = document.getElementById('close-achievements');
 
-console.log('Leaderboard button element:', leaderboardBtn);
-console.log('Leaderboard panel element:', leaderboardPanel);
 
 let hasPig = false;
 let bestScore = 0;
@@ -1407,11 +1393,8 @@ walletBtn.addEventListener('click', async () => {
   try {
     walletBtn.textContent = 'Connecting...';
     const acct = await connect();
-    console.log('Connected account:', acct);
     const addr = getAddress();
-    console.log('Address:', addr);
     if (!addr) {
-      console.error('No address after connect');
       walletBtn.textContent = 'Connect Wallet';
       return;
     }
@@ -1420,9 +1403,7 @@ walletBtn.addEventListener('click', async () => {
     playerInfo.classList.remove('hidden');
     playerAddress.textContent = shortAddress(addr);
 
-    console.log('Checking for existing pig...');
     const tokenId = await getPlayerPig(addr);
-    console.log('Player pig tokenId:', tokenId);
     if (tokenId > 0) {
       hasPig = true;
       await showPigStats(tokenId);
@@ -1435,11 +1416,9 @@ walletBtn.addEventListener('click', async () => {
       submitScoreBtn.classList.remove('hidden');
       startDailyBannerUpdates();
     } else {
-      console.log('No pig found, showing mint panel');
       mintPanel.classList.remove('hidden');
     }
   } catch (e) {
-    console.error('Connect failed:', e);
     walletBtn.textContent = 'Connect Wallet';
   }
 });
@@ -1470,7 +1449,6 @@ mintBtn.addEventListener('click', async () => {
     startDailyBannerUpdates();
     exitIntroOrbit();
   } catch (e) {
-    console.error('Mint failed:', e);
     mintStatus.textContent = `Mint failed: ${e.message || e}`;
     mintBtn.disabled = false;
   }
@@ -1498,7 +1476,6 @@ function applyPigAttributes(attrs) {
   const patternIdx = getPatternIndex(attrs.colorHue, attrs.rarity);
   const hue = attrs.colorHue / 360;
   const patternTexture = generatePatternTexture(patternIdx, hue);
-  console.log('Applying pattern:', PATTERN_LIST[patternIdx], 'hue:', attrs.colorHue);
 
   gameState.pig.traverse((child) => {
     if (child.isMesh && child.material) {
@@ -1858,7 +1835,6 @@ submitScoreBtn.addEventListener('click', async () => {
       // Grant rarity-based starting power-ups (Uncommon+)
       grantRarityPowerUps();
     } catch (e) {
-      console.error('Start game failed:', e);
       submitScoreBtn.textContent = 'Start Round';
       submitScoreBtn.disabled = false;
     }
@@ -1889,7 +1865,6 @@ async function endRound() {
       // Check achievements
       await checkAndClaimAchievements(finalScore);
     } catch (e) {
-      console.error('Submit failed:', e);
       hudScore.textContent = `Submit failed. Score: ${finalScore}`;
     }
   }
@@ -1918,16 +1893,13 @@ async function checkAndClaimAchievements(score) {
       if (score >= minScore) {
         const already = await hasAchievement(addr, id);
         if (already) {
-          console.log(`Achievement '${name}' already claimed, skipping`);
           continue;
         }
         try {
           await claimAchievement(id);
-          console.log(`Achievement unlocked: ${name}!`);
           showAchievementToast(name);
           newUnlocked++;
         } catch (e) {
-          console.warn(`Failed to claim '${name}':`, e);
         }
       }
     }
@@ -2030,7 +2002,6 @@ function renderLbEntries(entries) {
 }
 
 async function loadLeaderboard(mode) {
-  console.log('loadLeaderboard called with mode:', mode);
   lbMode = mode;
   leaderboardList.innerHTML = 'Loading...';
 
@@ -2043,32 +2014,21 @@ async function loadLeaderboard(mode) {
     let entries;
     if (mode === 'today') {
       const day = await getCurrentDay();
-      console.log('Fetching daily leaderboard for day:', day);
-      // Use window reference to allow demo mode override
-      const dailyFn = window.getDailyLeaderboard || getDailyLeaderboard;
-      entries = await dailyFn(day);
+      entries = await getDailyLeaderboard(day);
     } else {
-      console.log('Fetching all-time leaderboard');
-      // Use window reference to allow demo mode override
-      const allTimeFn = window.getLeaderboard || getLeaderboard;
-      entries = await allTimeFn();
+      entries = await getLeaderboard();
     }
-    console.log('Leaderboard entries fetched:', entries.length, entries);
     leaderboardList.innerHTML = renderLbEntries(entries);
   } catch (e) {
-    console.error('loadLeaderboard error:', e);
     leaderboardList.innerHTML = '<div style="color:#f66">Failed to load</div>';
   }
 }
 
 leaderboardBtn.addEventListener('click', async () => {
-  console.log('Leaderboard button clicked');
   leaderboardPanel.classList.remove('hidden');
-  console.log('Panel hidden class removed, classes:', leaderboardPanel.classList.toString());
 
   // Inject tabs if not present
   if (!leaderboardPanel.querySelector('.lb-tabs')) {
-    console.log('Injecting tabs');
     const tabsHtml = `<div class="lb-tabs">
       <button class="lb-tab active" data-mode="alltime">All Time</button>
       <button class="lb-tab" data-mode="today">Today</button>
@@ -2080,7 +2040,6 @@ leaderboardBtn.addEventListener('click', async () => {
     });
   }
 
-  console.log('Loading leaderboard with mode:', lbMode);
   await loadLeaderboard(lbMode);
 });
 
@@ -2125,14 +2084,11 @@ async function loadAchievements() {
     );
 
     // Get current streak for progress display
-    const streakFn = window.getPlayerStreak || getPlayerStreak;
-    const streak = await streakFn(addr);
+    const streak = await getPlayerStreak(addr);
     const score = await getPlayerScore(addr);
     const games = await getGamesPlayed(addr);
-    const dayFn = window.getCurrentDay || getCurrentDay;
-    const day = await dayFn();
-    const dailyLbFn = window.getDailyLeaderboard || getDailyLeaderboard;
-    const dailyLb = await dailyLbFn(day);
+    const day = await getCurrentDay();
+    const dailyLb = await getDailyLeaderboard(day);
     const isDailyChamp = dailyLb.length > 0 && dailyLb[0].player.toLowerCase() === addr.toLowerCase();
 
     achievementsList.innerHTML = ACHIEVEMENTS.map((ach, i) => {
@@ -2150,7 +2106,6 @@ async function loadAchievements() {
       `;
     }).join('');
   } catch (e) {
-    console.error('Failed to load achievements:', e);
     achievementsList.innerHTML = '<div style="color:#f66">Failed to load achievements</div>';
   }
 }
@@ -2179,8 +2134,7 @@ async function updateDailyBanner() {
     const addr = getAddress();
     if (!addr) return;
 
-    const dayFn = window.getCurrentDay || getCurrentDay;
-    const day = await dayFn();
+    const day = await getCurrentDay();
     dailyDayEl.textContent = `🏆 Daily Challenge`;
 
     // Countdown to next day (UTC midnight)
@@ -2192,18 +2146,15 @@ async function updateDailyBanner() {
     dailyCountdownEl.textContent = `⏳ ${h}h ${m}m`;
 
     // Player's daily best
-    const dailyScoreFn = window.getPlayerDailyScore || getPlayerDailyScore;
-    const dailyScore = await dailyScoreFn(addr, day);
+    const dailyScore = await getPlayerDailyScore(addr, day);
     dailyBestEl.textContent = dailyScore > 0 ? `Your Best: ${dailyScore}` : '';
 
     // Streak
-    const streakFn = window.getPlayerStreak || getPlayerStreak;
-    const streak = await streakFn(addr);
+    const streak = await getPlayerStreak(addr);
     dailyStreakEl.textContent = streak > 0 ? `🔥 ${streak} day` : '';
 
     dailyBanner.classList.remove('hidden');
   } catch (e) {
-    console.warn('Daily banner update failed:', e);
   }
 }
 
@@ -2244,7 +2195,6 @@ function gameLoop() {
 // INITIALIZATION
 // ============================================================================
 async function init() {
-  console.log('Initializing The Pour Pig (Starknet Coin Rush)...');
 
   setupLighting();
   createEnvironment();
@@ -2259,7 +2209,6 @@ async function init() {
     loadingScreen.classList.add('hidden');
     gameState.isLoaded = true;
 
-    console.log('Game initialized successfully!');
 
     // Exit intro orbit on any user interaction
     const exitIntro = () => {
@@ -2275,53 +2224,9 @@ async function init() {
     gameLoop();
 
   } catch (error) {
-    console.error('Failed to initialize game:', error);
     loadingScreen.querySelector('p').textContent = 'Failed to load game. Check console for details.';
     loadingScreen.querySelector('.loading-spinner').style.display = 'none';
   }
 }
-
-// ============================================================================
-// DEMO MODE: Expose contract functions to window for interception
-// ============================================================================
-window.getLeaderboard = getLeaderboard;
-window.getDailyLeaderboard = getDailyLeaderboard;
-window.getPlayerDailyScore = getPlayerDailyScore;
-window.getPlayerStreak = getPlayerStreak;
-window.getCurrentDay = getCurrentDay;
-window.updateDailyBanner = updateDailyBanner;  // For demo mode to refresh banner immediately
-
-// DEMO MODE: Listen for pig preview events from demo-mode.js
-window.addEventListener('demo-preview-pig', (event) => {
-  const preset = event.detail;
-  console.log('Applying pig preset:', preset);
-
-  // Update pig attributes
-  pigAttrs = {
-    colorHue: preset.colorHue,
-    rarity: preset.rarity,
-    speedBonus: preset.speedBonus,
-    sizeScale: preset.sizeScale,
-  };
-
-  // Apply to the pig model if it exists
-  if (gameState.pig) {
-    applyPigAttributes(pigAttrs);
-  }
-
-  // Update the UI stats display
-  const patternName = getPatternName(preset.colorHue, preset.rarity);
-  const pigColorEl = document.getElementById('pig-color');
-  const pigSpeedEl = document.getElementById('pig-speed');
-  const pigSizeEl = document.getElementById('pig-size');
-  const pigRarityEl = document.getElementById('pig-rarity');
-
-  if (pigColorEl) pigColorEl.textContent = `Pattern: ${patternName}`;
-  if (pigSpeedEl) pigSpeedEl.textContent = `Speed: +${preset.speedBonus}`;
-  if (pigSizeEl) pigSizeEl.classList.add('hidden');
-  if (pigRarityEl) pigRarityEl.textContent = `Rarity: ${rarityName(preset.rarity)}`;
-
-  console.log('%c✅ Pig preview applied!', 'color: #4ecdc4; font-weight: bold');
-});
 
 init();
