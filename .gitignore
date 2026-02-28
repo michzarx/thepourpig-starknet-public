@@ -38,3 +38,6 @@ docs/[archive] design-reference/
 
 # Source assets (originals, not needed for build)
 assets/
+
+# Demo mode (internal tooling)
+frontend/src/demo-mode.js
